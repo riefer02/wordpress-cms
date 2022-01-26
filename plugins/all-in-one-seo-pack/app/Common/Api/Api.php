@@ -53,6 +53,7 @@ class Api {
 			'keyphrases'                                          => [ 'callback' => [ 'PostsTerms', 'updatePostKeyphrases' ], 'access' => 'aioseo_page_analysis' ],
 			'analyze'                                             => [ 'callback' => [ 'Analyze', 'analyzeSite' ] ],
 			'analyze_headline'                                    => [ 'callback' => [ 'Analyze', 'analyzeHeadline' ] ],
+			'analyze_headline/delete'                             => [ 'callback' => [ 'Analyze', 'deleteHeadline' ], 'access' => 'aioseo_seo_analysis_settings' ],
 			'analyze/delete-site'                                 => [ 'callback' => [ 'Analyze', 'deleteSite' ], 'access' => 'aioseo_seo_analysis_settings' ],
 			'clear-log'                                           => [ 'callback' => [ 'Tools', 'clearLog' ], 'access' => 'aioseo_tools_settings' ],
 			'connect'                                             => [ 'callback' => [ 'Connect', 'saveConnectToken' ], 'access' => [ 'aioseo_general_settings', 'aioseo_setup_wizard' ] ],
@@ -85,6 +86,7 @@ class Api {
 						'aioseo_search_appearance_settings',
 						'aioseo_social_networks_settings',
 						'aioseo_sitemap_settings',
+						'aioseo_link_assistant_settings',
 						'aioseo_redirects_settings',
 						'aioseo_seo_analysis_settings',
 						'aioseo_tools_settings',
@@ -94,6 +96,7 @@ class Api {
 			],
 			'plugins/deactivate'                                  => [ 'callback' => [ 'Plugins', 'deactivatePlugins' ], 'access' => 'aioseo_feature_manager_settings' ],
 			'plugins/install'                                     => [ 'callback' => [ 'Plugins', 'installPlugins' ], 'access' => [ 'install_plugins', 'aioseo_feature_manager_settings' ] ],
+			'plugins/upgrade'                                     => [ 'callback' => [ 'Plugins', 'upgradePlugins' ], 'access' => [ 'update_plugins', 'aioseo_feature_manager_settings' ] ],
 			'reset-settings'                                      => [ 'callback' => [ 'Settings', 'resetSettings' ], 'access' => 'aioseo_tools_settings' ],
 			'settings/export'                                     => [ 'callback' => [ 'Settings', 'exportSettings' ], 'access' => 'aioseo_tools_settings' ],
 			'settings/hide-setup-wizard'                          => [ 'callback' => [ 'Settings', 'hideSetupWizard' ] ],
@@ -201,6 +204,7 @@ class Api {
 		if ( ! array_search( 'X-WP-Nonce', $allowHeaders, true ) ) {
 			$allowHeaders[] = 'X-WP-Nonce';
 		}
+
 		return $allowHeaders;
 	}
 
@@ -225,11 +229,28 @@ class Api {
 	 * @return bool                      True if validated, false if not.
 	 */
 	public function validateAccess( $request ) {
+		$routeData = $this->getRouteData( $request );
+		if ( empty( $routeData ) ) {
+			return false;
+		}
+
+		return current_user_can( apply_filters( 'aioseo_manage_seo', 'aioseo_manage_seo' ) );
+	}
+
+	/**
+	 * Returns the data for the route that is being accessed.
+	 *
+	 * @since 4.1.6
+	 *
+	 * @param  \WP_REST_Request $request The REST Request.
+	 * @return array                     The route data.
+	 */
+	protected function getRouteData( $request ) {
 		// NOTE: Since WordPress uses case-insensitive patterns to match routes,
 		// we are forcing everything to lowercase to ensure we have the proper route.
 		// This prevents users with lower privileges from accessing routes they shouldn't.
 		$route     = aioseo()->helpers->toLowercase( $request->get_route() );
-		$route     = str_replace( '/' . $this->namespace . '/', '', $route );
+		$route     = untrailingslashit( str_replace( '/' . $this->namespace . '/', '', $route ) );
 		$routeData = isset( $this->getRoutes()[ $request->get_method() ][ $route ] ) ? $this->getRoutes()[ $request->get_method() ][ $route ] : [];
 
 		// No direct route name, let's try the regexes.
@@ -243,30 +264,6 @@ class Api {
 			}
 		}
 
-		// If we still have no route data, return false.
-		if ( empty( $routeData ) ) {
-			return false;
-		}
-
-		// If only the access parameter is missing from the array, we aren't checking any additional permissions.
-		if ( empty( $routeData['access'] ) ) {
-			return true;
-		}
-
-		// We validate with any of the access options.
-		if ( ! is_array( $routeData['access'] ) ) {
-			$routeData['access'] = [ $routeData['access'] ];
-		}
-		foreach ( $routeData['access'] as $access ) {
-			if ( current_user_can( $access ) ) {
-				return true;
-			}
-		}
-
-		if ( current_user_can( apply_filters( 'aioseo_manage_seo', 'aioseo_manage_seo' ) ) ) {
-			return true;
-		}
-
-		return false;
+		return $routeData;
 	}
 }

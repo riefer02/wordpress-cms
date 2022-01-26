@@ -22,41 +22,15 @@ class PreUpdates {
 			return;
 		}
 
-		$lastActiveVersion = $this->getInternalOptions( [ 'internal', 'lastActiveVersion' ] );
+		$lastActiveVersion = aioseo()->internalOptions->internal->lastActiveVersion;
+		if ( aioseo()->version !== $lastActiveVersion ) {
+			// Bust the table/columns cache so that we can start the update migrations with a fresh slate.
+			aioseo()->internalOptions->database->installedTables = '';
+		}
 
 		if ( version_compare( $lastActiveVersion, '4.1.5', '<' ) ) {
 			$this->createCacheTable();
 		}
-	}
-
-	/**
-	 * Manually get and parse internal options.
-	 *
-	 * @since 4.1.5
-	 *
-	 * @param  string|array $options         An array of option keys.
-	 * @return mixed|null                    The option value or null.
-	 */
-	private function getInternalOptions( $options ) {
-		$internalOptions = json_decode( get_option( 'aioseo_options_internal' ) );
-
-		if ( empty( $internalOptions ) ) {
-			return null;
-		}
-
-		if ( ! is_array( $options ) ) {
-			$options = [ $options ];
-		}
-
-		foreach ( $options as $option ) {
-			if ( ! isset( $internalOptions->{$option} ) ) {
-				return null;
-			}
-
-			$internalOptions = $internalOptions->{$option};
-		}
-
-		return $internalOptions;
 	}
 
 	/**

@@ -17,11 +17,11 @@ class RobotsTxt {
 	public function __construct() {
 		add_filter( 'robots_txt', [ $this, 'buildRules' ], 10000, 2 );
 
-		// If our tables do not exist, create them now.
-		if ( ! aioseo()->db->tableExists( 'aioseo_notifications' ) ) {
-			aioseo()->updates->addInitialCustomTablesForV4();
+		if ( ! is_admin() ) {
+			return;
 		}
-		$this->checkForPhysicalFiles();
+
+		add_action( 'init', [ $this, 'checkForPhysicalFiles' ] );
 	}
 
 	/**
@@ -52,6 +52,7 @@ class RobotsTxt {
 		if ( ! aioseo()->options->tools->robots->enable ) {
 			$networkAndOriginal = $this->mergeRules( $originalRules, $this->parseRules( $networkRules ) );
 			$networkAndOriginal = $this->robotsArrayUnique( $networkAndOriginal );
+
 			return $this->stringify( $networkAndOriginal, $original );
 		}
 
@@ -164,6 +165,7 @@ class RobotsTxt {
 				unset( $rules2[ $userAgent ][ $directive ][ $index1 ] );
 			}
 		}
+
 		return [ $rules1, $rules2 ];
 	}
 
@@ -295,6 +297,7 @@ class RobotsTxt {
 				$sitemapUrls[] = trim( $line );
 			}
 		}
+
 		return $sitemapUrls;
 	}
 
@@ -330,7 +333,7 @@ class RobotsTxt {
 	 *
 	 * @return void
 	 */
-	private function checkForPhysicalFiles() {
+	public function checkForPhysicalFiles() {
 		if ( ! $this->hasPhysicalRobotsTxt() ) {
 			return;
 		}
@@ -463,6 +466,7 @@ class RobotsTxt {
 	public function deletePhysicalRobotsTxt() {
 		$wpfs = aioseo()->helpers->wpfs();
 		$file = trailingslashit( $wpfs->abspath() ) . 'robots.txt';
+
 		return @$wpfs->delete( $file );
 	}
 

@@ -169,6 +169,7 @@ class SystemStatus {
 		if ( is_array( $mysqlInfo ) ) {
 			$sqlMode = $mysqlInfo[0]->Value;
 		}
+
 		return [
 			'label'   => __( 'Server Info', 'all-in-one-seo-pack' ),
 			'results' => [
@@ -237,6 +238,7 @@ class SystemStatus {
 	 */
 	public static function activeTheme() {
 		$themeData = wp_get_theme();
+
 		return [
 			'label'   => __( 'Active Theme', 'all-in-one-seo-pack' ),
 			'results' => [
@@ -259,7 +261,7 @@ class SystemStatus {
 		$plugins   = [];
 		$muPlugins = get_mu_plugins();
 		if ( ! empty( $muPlugins ) ) {
-			foreach ( $muPlugins as $plugin => $pluginData ) {
+			foreach ( $muPlugins as $pluginData ) {
 				$plugins[] = [
 					'header' => $pluginData['Name'],
 					'value'  => $pluginData['Version']

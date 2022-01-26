@@ -60,12 +60,15 @@ class Addons {
 		// The API request will tell us if we can activate a plugin, but let's check if its already active.
 		$installedPlugins = array_keys( get_plugins() );
 		foreach ( $addons as $key => $addon ) {
-			$addons[ $key ]->basename    = $this->getAddonBasename( $addon->sku );
-			$addons[ $key ]->installed   = in_array( $this->getAddonBasename( $addon->sku ), $installedPlugins, true );
-			$addons[ $key ]->isActive    = is_plugin_active( $addons[ $key ]->basename );
-			$addons[ $key ]->canInstall  = $this->canInstall();
-			$addons[ $key ]->canActivate = $this->canActivate();
-			$addons[ $key ]->capability  = $this->getManageCapability( $addon->sku );
+			$addons[ $key ]->basename          = $this->getAddonBasename( $addon->sku );
+			$addons[ $key ]->installed         = in_array( $this->getAddonBasename( $addon->sku ), $installedPlugins, true );
+			$addons[ $key ]->isActive          = is_plugin_active( $addons[ $key ]->basename );
+			$addons[ $key ]->canInstall        = $this->canInstall();
+			$addons[ $key ]->canActivate       = $this->canActivate();
+			$addons[ $key ]->canUpdate         = $this->canUpdate();
+			$addons[ $key ]->capability        = $this->getManageCapability( $addon->sku );
+			$addons[ $key ]->minimumVersion    = '0.0.0';
+			$addons[ $key ]->hasMinimumVersion = false;
 		}
 
 		return $addons;
@@ -97,6 +100,7 @@ class Addons {
 				$capability = 'aioseo_local_seo_settings';
 				break;
 		}
+
 		return $capability;
 	}
 
@@ -179,7 +183,7 @@ class Addons {
 				? aioseo()->options->general->licenseKey
 				: '',
 			'domain'      => aioseo()->helpers->getSiteDomain(),
-			'sku'         => $sku,
+			'sku'         => defined( 'AIOSEO_ADDON_SKU' ) ? AIOSEO_ADDON_SKU : $sku,
 			'version'     => AIOSEO_VERSION,
 			'php_version' => PHP_VERSION,
 			'wp_version'  => get_bloginfo( 'version' )
@@ -235,6 +239,7 @@ class Addons {
 
 			return $addon->levels;
 		}
+
 		return [];
 	}
 
@@ -249,6 +254,7 @@ class Addons {
 		if ( defined( 'AIOSEO_LICENSING_URL' ) ) {
 			return AIOSEO_LICENSING_URL;
 		}
+
 		return $this->licensingUrl;
 	}
 
@@ -357,6 +363,26 @@ class Addons {
 
 		// Determine whether file modifications are allowed.
 		if ( ! wp_is_file_mod_allowed( 'aioseo_can_install' ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Determine if addons/plugins can be updates.
+	 *
+	 * @since 4.0.0
+	 *
+	 * @return bool True if yes, false if not.
+	 */
+	public function canUpdate() {
+		if ( ! current_user_can( 'update_plugins' ) ) {
+			return false;
+		}
+
+		// Determine whether file modifications are allowed.
+		if ( ! wp_is_file_mod_allowed( 'aioseo_can_update' ) ) {
 			return false;
 		}
 
@@ -597,6 +623,37 @@ class Addons {
 				'learnMoreUrl'       => 'https://aioseo.com/redirection-manager',
 				'manageUrl'          => 'https://route#aioseo-redirects',
 				'basename'           => 'aioseo-redirects/aioseo-redirects.php',
+				'installed'          => false,
+				'isActive'           => false,
+				'canInstall'         => false
+			],
+			[
+				'sku'                => 'aioseo-link-assistant',
+				'name'               => 'Link Assistant',
+				'version'            => '1.0.0',
+				'image'              => null,
+				'icon'               => 'svg-link-assistant',
+				'levels'             => [
+					'agency',
+					'basic',
+					'plus',
+					'pro',
+					'elite'
+				],
+				'currentLevels'      => [
+					'basic',
+					'plus',
+					'pro',
+					'elite'
+				],
+				'requiresUpgrade'    => false,
+				'description'        => '<p>Super-charge your SEO with Link Assistant! Get relevant suggestions for adding internal links to older content as well as finding any orphaned posts that have no internal links. Use our reporting feature to see all link suggestions or add them directly from any page or post.</p>', // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+				'descriptionVersion' => 0,
+				'downloadUrl'        => '',
+				'productUrl'         => 'https://aioseo.com/link-assistant',
+				'learnMoreUrl'       => 'https://aioseo.com/link-assistant',
+				'manageUrl'          => 'https://route#aioseo-link-assistant',
+				'basename'           => 'aioseo-link-assistant/aioseo-link-assistant.php',
 				'installed'          => false,
 				'isActive'           => false,
 				'canInstall'         => false

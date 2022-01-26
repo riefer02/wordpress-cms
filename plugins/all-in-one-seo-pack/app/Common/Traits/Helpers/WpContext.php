@@ -76,6 +76,7 @@ trait WpContext {
 	 */
 	public function isTaxTerm() {
 		$object = get_queried_object();
+
 		return $object instanceof \WP_Term;
 	}
 
@@ -105,6 +106,7 @@ trait WpContext {
 		}
 
 		$post = aioseo()->helpers->getPost( $post );
+
 		return ( 'page' === get_option( 'show_on_front' ) && ! empty( $post->ID ) && (int) get_option( 'page_on_front' ) === $post->ID );
 	}
 
@@ -141,6 +143,7 @@ trait WpContext {
 		if ( is_multisite() ) {
 			return get_network()->site_id;
 		}
+
 		return get_current_blog_id();
 	}
 
@@ -168,9 +171,11 @@ trait WpContext {
 			if ( $showOnFront ) {
 				if ( is_front_page() ) {
 					$pageOnFront = $pageOnFront ? $pageOnFront : (int) get_option( 'page_on_front' );
+
 					return get_post( $pageOnFront );
 				} elseif ( is_home() ) {
 					$pageForPosts = $pageForPosts ? $pageForPosts : (int) get_option( 'page_for_posts' );
+
 					return get_post( $pageForPosts );
 				}
 			}
@@ -211,6 +216,7 @@ trait WpContext {
 		}
 
 		$content[ $post->ID ] = $this->theContent( $post->post_content );
+
 		return $content[ $post->ID ];
 	}
 
@@ -226,9 +232,10 @@ trait WpContext {
 	 */
 	public function theContent( $postContent ) {
 		// The order of the function calls below is intentional and should NOT change.
-		$postContent = do_blocks( $postContent );
+		$postContent = function_exists( 'do_blocks' ) ? do_blocks( $postContent ) : $postContent; // phpcs:ignore AIOSEO.WpFunctionUse.NewFunctions.do_blocksFound
 		$postContent = wpautop( $postContent );
 		$postContent = $this->doShortcodes( $postContent );
+
 		return $postContent;
 	}
 
@@ -264,6 +271,7 @@ trait WpContext {
 		$postContent          = str_replace( ']]>', ']]&gt;', $postContent );
 		$postContent          = preg_replace( '#(<figure.*\/figure>|<img.*\/>)#', '', $postContent );
 		$content[ $post->ID ] = trim( wp_strip_all_tags( strip_shortcodes( $postContent ) ) );
+
 		return $content[ $post->ID ];
 	}
 
@@ -339,6 +347,7 @@ trait WpContext {
 	public function getPageNumber() {
 		$page  = get_query_var( 'page' );
 		$paged = get_query_var( 'paged' );
+
 		return ! empty( $page )
 			? $page
 			: (
@@ -353,10 +362,11 @@ trait WpContext {
 	 *
 	 * @since 4.0.5
 	 *
-	 * @param  WP_Post $post The Post object to check.
-	 * @return bool          True if valid, false if not.
+	 * @param  WP_Post $post                The Post object to check.
+	 * @param  bool    $allowedPostStatuses Whether or not to allow drafts.
+	 * @return bool                         True if valid, false if not.
 	 */
-	public function isValidPost( $post ) {
+	public function isValidPost( $post, $allowedPostStatuses = [ 'publish' ] ) {
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return false;
 		}
@@ -370,7 +380,7 @@ trait WpContext {
 			empty( $post ) ||
 			'scheduled-action' === $post->post_type ||
 			'revision' === $post->post_type ||
-			'publish' !== $post->post_status
+			! in_array( $post->post_status, $allowedPostStatuses, true )
 		) {
 			return false;
 		}
@@ -388,6 +398,7 @@ trait WpContext {
 	 */
 	public function isValidAttachment( $url ) {
 		$uploadDirUrl = aioseo()->helpers->escapeRegex( $this->getWpContentUrl() );
+
 		return preg_match( "/$uploadDirUrl.*/", $url );
 	}
 
@@ -402,9 +413,9 @@ trait WpContext {
 	 * @return int|boolean       The attachment ID or false if no attachment could be found.
 	 */
 	public function attachmentUrlToPostId( $url ) {
-		$cacheName = "aioseo_attachment_url_to_post_id_$url";
+		$cacheName = sha1( "aioseo_attachment_url_to_post_id_$url" );
 
-		$cachedId = wp_cache_get( $cacheName, 'aioseo' );
+		$cachedId = aioseo()->cache->get( $cacheName );
 		if ( $cachedId ) {
 			return 'none' !== $cachedId && is_numeric( $cachedId ) ? (int) $cachedId : false;
 		}
@@ -421,7 +432,8 @@ trait WpContext {
 		}
 
 		if ( ! $this->isValidAttachment( $path ) ) {
-			wp_cache_set( $cacheName, 'none', 'aioseo', DAY_IN_SECONDS );
+			aioseo()->cache->update( $cacheName, 'none' );
+
 			return false;
 		}
 
@@ -438,11 +450,13 @@ trait WpContext {
 			->result();
 
 		if ( empty( $results[0]->post_id ) ) {
-			wp_cache_set( $cacheName, 'none', 'aioseo', DAY_IN_SECONDS );
+			aioseo()->cache->update( $cacheName, 'none' );
+
 			return false;
 		}
 
-		wp_cache_set( $cacheName, $results[0]->post_id, 'aioseo', DAY_IN_SECONDS );
+		aioseo()->cache->update( $cacheName, $results[0]->post_id );
+
 		return $results[0]->post_id;
 	}
 
@@ -497,6 +511,7 @@ trait WpContext {
 		if ( ! $screen || ! isset( $screen->base ) ) {
 			return false;
 		}
+
 		return $screen->base === $screenName;
 	}
 
@@ -514,6 +529,7 @@ trait WpContext {
 		if ( ! $screen || ! isset( $screen->post_type ) ) {
 			return false;
 		}
+
 		return $screen->post_type === $postType;
 	}
 

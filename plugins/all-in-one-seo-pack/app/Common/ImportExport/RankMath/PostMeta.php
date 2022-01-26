@@ -66,6 +66,7 @@ class PostMeta {
 
 		if ( ! $posts || ! count( $posts ) ) {
 			aioseo()->cache->delete( 'import_post_meta_rank_math' );
+
 			return;
 		}
 

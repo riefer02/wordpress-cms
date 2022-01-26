@@ -166,12 +166,23 @@ class Model implements \JsonSerializable {
 			trim( $key );
 			$this->$key = $value;
 
+			if ( null === $value && in_array( $key, $this->nullFields, true ) ) {
+				continue;
+			}
+
 			if ( in_array( $key, $this->jsonFields, true ) ) {
 				$this->$key = json_decode( $value );
-			} elseif ( in_array( $key, $this->booleanFields, true ) ) {
+				continue;
+			}
+
+			if ( in_array( $key, $this->booleanFields, true ) ) {
 				$this->$key = (bool) $value;
-			} elseif ( in_array( $key, $this->numericFields, true ) ) {
+				continue;
+			}
+
+			if ( in_array( $key, $this->numericFields, true ) ) {
 				$this->$key = (int) $value;
+				continue;
 			}
 		}
 	}
@@ -443,10 +454,26 @@ class Model implements \JsonSerializable {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @return string JSON object.
+	 * @param  string $existingOptions The existing options in JSON.
+	 * @return string                  The existing options with defaults added in JSON.
 	 */
-	public static function getDefaultTabsOptions() {
-		return '{"tab":"general","tab_social":"facebook","tab_sidebar":"general","tab_modal":"general","tab_modal_social":"facebook"}';
+	public static function getDefaultTabsOptions( $existingOptions = '' ) {
+		$defaults = [
+			'tab'              => 'general',
+			'tab_social'       => 'facebook',
+			'tab_sidebar'      => 'general',
+			'tab_modal'        => 'general',
+			'tab_modal_social' => 'facebook'
+		];
+
+		if ( empty( $existingOptions ) ) {
+			return wp_json_encode( $defaults );
+		}
+
+		$existingOptions = json_decode( $existingOptions, true );
+		$existingOptions = array_replace_recursive( $defaults, $existingOptions );
+
+		return wp_json_encode( $existingOptions );
 	}
 
 	/**

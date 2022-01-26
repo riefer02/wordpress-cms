@@ -50,7 +50,13 @@ class CachePrune {
 		add_action( $this->pruneAction, [ $this, 'prune' ] );
 		add_action( $this->optionCacheCleanAction, [ $this, 'optionCacheClean' ] );
 
-		aioseo()->helpers->scheduleRecurrentAction( $this->pruneAction, 0, DAY_IN_SECONDS );
+		if ( ! is_admin() ) {
+			return;
+		}
+
+		if ( ! aioseo()->helpers->isScheduledAction( $this->pruneAction ) ) {
+			aioseo()->helpers->scheduleRecurrentAction( $this->pruneAction, 0, DAY_IN_SECONDS );
+		}
 	}
 
 	/**
@@ -81,7 +87,7 @@ class CachePrune {
 
 		// Schedule a new run if we're not done cleaning.
 		if ( 0 !== $optionCache->db->rows_affected ) {
-			aioseo()->helpers->scheduleSingleAction( $this->optionCacheCleanAction, MINUTE_IN_SECONDS );
+			aioseo()->helpers->scheduleSingleAction( $this->optionCacheCleanAction, MINUTE_IN_SECONDS, [], true );
 		}
 	}
 

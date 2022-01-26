@@ -119,6 +119,23 @@ class MetaData {
 
 			return $posts[ $post->ID ];
 		}
+
 		return false;
+	}
+
+	/**
+	 * Returns the cached OG image from the meta data.
+	 *
+	 * @since 4.1.6
+	 *
+	 * @param  Object $metaData The meta data object.
+	 * @return array            An array of image data.
+	 */
+	public function getCachedOgImage( $metaData ) {
+		return [
+			$metaData->og_image_url,
+			isset( $metaData->og_image_width ) ? $metaData->og_image_width : null,
+			isset( $metaData->og_image_height ) ? $metaData->og_image_height : null
+		];
 	}
 }

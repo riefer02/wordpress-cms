@@ -21,8 +21,7 @@ class ActionScheduler extends \ActionScheduler_ListTable {
 	 * @param $logger
 	 * @param $runner
 	 */
-	public function __construct( $store, $logger, $runner ) {
-		global $wpdb;
+	public function __construct( $store, $logger, $runner ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		if (
 				(
 					is_a( $store, 'ActionScheduler_HybridStore' ) ||
@@ -38,10 +37,10 @@ class ActionScheduler extends \ActionScheduler_ListTable {
 				'actionscheduler_claims',
 			];
 
-			$foundTables = $wpdb->get_col( "SHOW TABLES LIKE '{$wpdb->prefix}actionscheduler%'" );
 			foreach ( $tableList as $tableName ) {
-				if ( ! in_array( $wpdb->prefix . $tableName, $foundTables, true ) ) {
+				if ( ! aioseo()->db->tableExists( $tableName ) ) {
 					$this->recreate_tables();
+
 					return;
 				}
 			}

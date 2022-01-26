@@ -133,11 +133,15 @@ class MonsterInsights_Notification_Event_Runner {
 				$time_now   = time();
 				if ( $time_since < $time_now ) {
 					// Interval passed since it ran so let's add this one.
-					$notification->add_notification();
-					// Update the last run date as right now.
-					$this->update_last_run( $notification->notification_id );
-					// Let's not add multiple notifications at the same time.
-					break;
+
+					$added_notification = $notification->add_notification();
+
+					if ($added_notification) {
+                        // Update the last run date as right now.
+                        $this->update_last_run($notification->notification_id);
+                        // Let's not add multiple notifications at the same time.
+                        break;
+                    }
 				}
 			}
 		}

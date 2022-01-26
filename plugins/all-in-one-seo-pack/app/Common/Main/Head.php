@@ -107,6 +107,7 @@ class Head {
 			return self::$pageTitle;
 		}
 		self::$pageTitle = aioseo()->meta->title->filterPageTitle( $wpTitle );
+
 		return self::$pageTitle;
 	}
 

@@ -60,6 +60,7 @@ abstract class Usage {
 			$action = 'aioseo_send_usage_data';
 			if ( ! $this->enabled ) {
 				aioseo()->helpers->unscheduleAction( $action );
+
 				return;
 			}
 
@@ -203,6 +204,7 @@ abstract class Usage {
 				if ( isset( $plugin['Version'] ) ) {
 					return $plugin['Version'];
 				}
+
 				return 'Not Set';
 			},
 			$plugins

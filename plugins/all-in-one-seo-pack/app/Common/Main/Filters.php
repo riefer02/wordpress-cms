@@ -49,6 +49,10 @@ abstract class Filters {
 			add_filter( 'weglot_active_translation_before_treat_page', '__return_false' );
 		}
 
+		if ( preg_match( '#(\.xml)$#i', $_SERVER['REQUEST_URI'] ) ) {
+			add_filter( 'jetpack_boost_should_defer_js', '__return_false' );
+		}
+
 		// GoDaddy CDN compatibility.
 		add_filter( 'wpaas_cdn_file_ext', [ $this, 'goDaddySitemapXml' ] );
 
@@ -96,12 +100,8 @@ abstract class Filters {
 			return;
 		}
 
-		$newPost = Models\Post::getPost( $newPostId );
-		if ( $newPost->exists() ) {
-			return;
-		}
-
-		$columns = $originalAioseoPost->getColumns();
+		$newAioseoPost = Models\Post::getPost( $newPostId );
+		$columns       = $originalAioseoPost->getColumns();
 		foreach ( $columns as $column => $value ) {
 			// Skip the ID column.
 			if ( 'id' === $column ) {
@@ -109,13 +109,13 @@ abstract class Filters {
 			}
 
 			if ( 'post_id' === $column ) {
-				$newPost->$column = $newPostId;
+				$newAioseoPost->$column = $newPostId;
 				continue;
 			}
 
-			$newPost->$column = $originalAioseoPost->$column;
+			$newAioseoPost->$column = $originalAioseoPost->$column;
 		}
-		$newPost->save();
+		$newAioseoPost->save();
 	}
 
 	/**
@@ -178,6 +178,7 @@ abstract class Filters {
 	public function goDaddySitemapXml( $extensions ) {
 		$key = array_search( 'xml', $extensions, true );
 		unset( $extensions[ $key ] );
+
 		return $extensions;
 	}
 
@@ -223,6 +224,7 @@ abstract class Filters {
 				$actions = 'after' === $position ? array_merge( $actions, $link ) : array_merge( $link, $actions );
 			}
 		}
+
 		return $actions;
 	}
 

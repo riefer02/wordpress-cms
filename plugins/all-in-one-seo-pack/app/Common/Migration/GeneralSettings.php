@@ -209,6 +209,7 @@ class GeneralSettings {
 			$title         = empty( $format ) ? $homePageTitle : aioseo()->helpers->pregReplace( '#%page_title%#', $homePageTitle, $format );
 			$title         = aioseo()->migration->helpers->macrosToSmartTags( $title );
 			aioseo()->options->searchAppearance->global->siteTitle = aioseo()->helpers->sanitizeOption( $title );
+
 			return;
 		}
 
@@ -287,6 +288,7 @@ class GeneralSettings {
 			$description         = empty( $format ) ? $homePageDescription : aioseo()->helpers->pregReplace( '#%description%#', $homePageDescription, $format );
 			$description         = aioseo()->migration->helpers->macrosToSmartTags( $description );
 			aioseo()->options->searchAppearance->global->metaDescription = aioseo()->helpers->sanitizeOption( $description );
+
 			return;
 		}
 
@@ -441,6 +443,7 @@ class GeneralSettings {
 
 		if ( ! $found ) {
 			Models\Notification::deleteNotificationByName( 'v3-migration-title-formats-blank' );
+
 			return;
 		}
 
@@ -745,6 +748,7 @@ class GeneralSettings {
 				'button2_action'    => 'http://action#notification/v3-migration-schema-number-reminder',
 				'start'             => gmdate( 'Y-m-d H:i:s' )
 			] );
+
 			return;
 		}
 		aioseo()->options->searchAppearance->global->schema->phone = $phoneNumber;

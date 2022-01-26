@@ -34,7 +34,8 @@ trait Vue {
 			'screen'           => [
 				'base'        => $screen->base,
 				'postType'    => $screen->post_type,
-				'blockEditor' => isset( $screen->is_block_editor ) ? $screen->is_block_editor : false
+				'blockEditor' => isset( $screen->is_block_editor ) ? $screen->is_block_editor : false,
+				'new'         => isset( $screen->action ) && 'add' === $screen->action
 			],
 			'internalOptions'  => aioseo()->internalOptions->all(),
 			'options'          => aioseo()->options->all(),
@@ -122,9 +123,10 @@ trait Vue {
 			],
 			'plugins'          => $this->getPluginData(),
 			'postData'         => [
-				'postTypes'  => $this->getPublicPostTypes( false, false, true ),
-				'taxonomies' => $this->getPublicTaxonomies( false, true ),
-				'archives'   => $this->getPublicPostTypes( false, true, true )
+				'postTypes'    => $this->getPublicPostTypes( false, false, true ),
+				'taxonomies'   => $this->getPublicTaxonomies( false, true ),
+				'archives'     => $this->getPublicPostTypes( false, true, true ),
+				'postStatuses' => $this->getPublicPostStatuses()
 			],
 			'notifications'    => Models\Notification::getNotifications( false ),
 			'addons'           => aioseo()->addons->getAddons(),
@@ -148,72 +150,75 @@ trait Vue {
 			$post                = Models\Post::getPost( $postId );
 
 			$data['currentPost'] = [
-				'context'                     => 'post',
-				'tags'                        => aioseo()->tags->getDefaultPostTags( $postId ),
-				'id'                          => $postId,
-				'priority'                    => ! empty( $post->priority ) ? $post->priority : 'default',
-				'frequency'                   => ! empty( $post->frequency ) ? $post->frequency : 'default',
-				'permalink'                   => get_the_permalink(),
-				'title'                       => ! empty( $post->title ) ? $post->title : aioseo()->meta->title->getPostTypeTitle( $postTypeObj->name ),
-				'description'                 => ! empty( $post->description ) ? $post->description : aioseo()->meta->description->getPostTypeDescription( $postTypeObj->name ),
-				'keywords'                    => ! empty( $post->keywords ) ? $post->keywords : wp_json_encode( [] ),
-				'keyphrases'                  => ! empty( $post->keyphrases )
+				'context'                        => 'post',
+				'tags'                           => aioseo()->tags->getDefaultPostTags( $postId ),
+				'id'                             => $postId,
+				'priority'                       => ! empty( $post->priority ) ? $post->priority : 'default',
+				'frequency'                      => ! empty( $post->frequency ) ? $post->frequency : 'default',
+				'permalink'                      => get_the_permalink(),
+				'title'                          => ! empty( $post->title ) ? $post->title : aioseo()->meta->title->getPostTypeTitle( $postTypeObj->name ),
+				'description'                    => ! empty( $post->description ) ? $post->description : aioseo()->meta->description->getPostTypeDescription( $postTypeObj->name ),
+				'keywords'                       => ! empty( $post->keywords ) ? $post->keywords : wp_json_encode( [] ),
+				'keyphrases'                     => ! empty( $post->keyphrases )
 					? json_decode( $post->keyphrases )
 					: json_decode( '{"focus":{},"additional":[]}' ),
-				'page_analysis'               => ! empty( $post->page_analysis )
+				'page_analysis'                  => ! empty( $post->page_analysis )
 					? json_decode( $post->page_analysis )
 					: Models\Post::getPageAnalysisDefaults(),
-				'loading'                     => [
+				'loading'                        => [
 					'focus'      => false,
 					'additional' => [],
 				],
-				'type'                        => $postTypeObj->labels->singular_name,
-				'postType'                    => 'type' === $postTypeObj->name ? '_aioseo_type' : $postTypeObj->name,
-				'isSpecialPage'               => $this->isSpecialPage( $postId ),
-				'isWooCommercePage'           => $this->isWooCommercePage( $postId ),
-				'seo_score'                   => (int) $post->seo_score,
-				'pillar_content'              => ( (int) $post->pillar_content ) === 0 ? false : true,
-				'canonicalUrl'                => $post->canonical_url,
-				'default'                     => ( (int) $post->robots_default ) === 0 ? false : true,
-				'noindex'                     => ( (int) $post->robots_noindex ) === 0 ? false : true,
-				'noarchive'                   => ( (int) $post->robots_noarchive ) === 0 ? false : true,
-				'nosnippet'                   => ( (int) $post->robots_nosnippet ) === 0 ? false : true,
-				'nofollow'                    => ( (int) $post->robots_nofollow ) === 0 ? false : true,
-				'noimageindex'                => ( (int) $post->robots_noimageindex ) === 0 ? false : true,
-				'noodp'                       => ( (int) $post->robots_noodp ) === 0 ? false : true,
-				'notranslate'                 => ( (int) $post->robots_notranslate ) === 0 ? false : true,
-				'maxSnippet'                  => null === $post->robots_max_snippet ? -1 : (int) $post->robots_max_snippet,
-				'maxVideoPreview'             => null === $post->robots_max_videopreview ? -1 : (int) $post->robots_max_videopreview,
-				'maxImagePreview'             => $post->robots_max_imagepreview,
-				'modalOpen'                   => false,
-				'tabs'                        => ( ! empty( $post->tabs ) )
+				'type'                           => $postTypeObj->labels->singular_name,
+				'postType'                       => 'type' === $postTypeObj->name ? '_aioseo_type' : $postTypeObj->name,
+				'isSpecialPage'                  => $this->isSpecialPage( $postId ),
+				'isWooCommercePageWithoutSchema' => $this->isWooCommercePageWithoutSchema( $postId ),
+				'seo_score'                      => (int) $post->seo_score,
+				'pillar_content'                 => ( (int) $post->pillar_content ) === 0 ? false : true,
+				'canonicalUrl'                   => $post->canonical_url,
+				'default'                        => ( (int) $post->robots_default ) === 0 ? false : true,
+				'noindex'                        => ( (int) $post->robots_noindex ) === 0 ? false : true,
+				'noarchive'                      => ( (int) $post->robots_noarchive ) === 0 ? false : true,
+				'nosnippet'                      => ( (int) $post->robots_nosnippet ) === 0 ? false : true,
+				'nofollow'                       => ( (int) $post->robots_nofollow ) === 0 ? false : true,
+				'noimageindex'                   => ( (int) $post->robots_noimageindex ) === 0 ? false : true,
+				'noodp'                          => ( (int) $post->robots_noodp ) === 0 ? false : true,
+				'notranslate'                    => ( (int) $post->robots_notranslate ) === 0 ? false : true,
+				'maxSnippet'                     => null === $post->robots_max_snippet ? -1 : (int) $post->robots_max_snippet,
+				'maxVideoPreview'                => null === $post->robots_max_videopreview ? -1 : (int) $post->robots_max_videopreview,
+				'maxImagePreview'                => $post->robots_max_imagepreview,
+				'modalOpen'                      => false,
+				'tabs'                           => ( ! empty( $post->tabs ) )
 					? json_decode( $post->tabs )
 					: json_decode( Models\Post::getDefaultTabsOptions() ),
-				'generalMobilePrev'           => false,
-				'socialMobilePreview'         => false,
-				'og_object_type'              => ! empty( $post->og_object_type ) ? $post->og_object_type : 'default',
-				'og_title'                    => $post->og_title,
-				'og_description'              => $post->og_description,
-				'og_image_custom_url'         => $post->og_image_custom_url,
-				'og_image_custom_fields'      => $post->og_image_custom_fields,
-				'og_image_type'               => ! empty( $post->og_image_type ) ? $post->og_image_type : 'default',
-				'og_video'                    => ! empty( $post->og_video ) ? $post->og_video : '',
-				'og_article_section'          => ! empty( $post->og_article_section ) ? $post->og_article_section : '',
-				'og_article_tags'             => ! empty( $post->og_article_tags ) ? $post->og_article_tags : wp_json_encode( [] ),
-				'twitter_use_og'              => ( (int) $post->twitter_use_og ) === 0 ? false : true,
-				'twitter_card'                => $post->twitter_card,
-				'twitter_image_custom_url'    => $post->twitter_image_custom_url,
-				'twitter_image_custom_fields' => $post->twitter_image_custom_fields,
-				'twitter_image_type'          => $post->twitter_image_type,
-				'twitter_title'               => $post->twitter_title,
-				'twitter_description'         => $post->twitter_description,
-				'schema_type'                 => ( ! empty( $post->schema_type ) ) ? $post->schema_type : 'default',
-				'schema_type_options'         => ( ! empty( $post->schema_type_options ) )
+				'generalMobilePrev'              => false,
+				'socialMobilePreview'            => false,
+				'og_object_type'                 => ! empty( $post->og_object_type ) ? $post->og_object_type : 'default',
+				'og_title'                       => $post->og_title,
+				'og_description'                 => $post->og_description,
+				'og_image_custom_url'            => $post->og_image_custom_url,
+				'og_image_custom_fields'         => $post->og_image_custom_fields,
+				'og_image_type'                  => ! empty( $post->og_image_type ) ? $post->og_image_type : 'default',
+				'og_video'                       => ! empty( $post->og_video ) ? $post->og_video : '',
+				'og_article_section'             => ! empty( $post->og_article_section ) ? $post->og_article_section : '',
+				'og_article_tags'                => ! empty( $post->og_article_tags ) ? $post->og_article_tags : wp_json_encode( [] ),
+				'twitter_use_og'                 => ( (int) $post->twitter_use_og ) === 0 ? false : true,
+				'twitter_card'                   => $post->twitter_card,
+				'twitter_image_custom_url'       => $post->twitter_image_custom_url,
+				'twitter_image_custom_fields'    => $post->twitter_image_custom_fields,
+				'twitter_image_type'             => $post->twitter_image_type,
+				'twitter_title'                  => $post->twitter_title,
+				'twitter_description'            => $post->twitter_description,
+				'schema_type'                    => ( ! empty( $post->schema_type ) ) ? $post->schema_type : 'default',
+				'schema_type_options'            => ( ! empty( $post->schema_type_options ) )
 					? json_decode( Models\Post::getDefaultSchemaOptions( $post->schema_type_options ) )
 					: json_decode( Models\Post::getDefaultSchemaOptions() ),
-				'metaDefaults'                => [
+				'metaDefaults'                   => [
 					'title'       => aioseo()->meta->title->getPostTypeTitle( $postTypeObj->name ),
 					'description' => aioseo()->meta->description->getPostTypeDescription( $postTypeObj->name )
+				],
+				'linkAssistant'                  => [
+					'modalOpen' => false
 				]
 			];
 

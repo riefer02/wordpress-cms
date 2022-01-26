@@ -117,6 +117,7 @@ class Notification extends Model {
 	public static function getAllActiveNotifications() {
 		$staticNotifications = self::getStaticNotifications();
 		$notifications       = array_values( json_decode( wp_json_encode( self::getActiveNotifications() ), true ) );
+
 		return ! empty( $staticNotifications ) ? array_merge( $staticNotifications, $notifications ) : $notifications;
 	}
 
@@ -306,6 +307,7 @@ class Notification extends Model {
 		$notification = new self;
 		$notification->set( $fields );
 		$notification->save();
+
 		return $notification;
 	}
 
@@ -335,6 +337,14 @@ class Notification extends Model {
 	public static function filterNotifications( $notifications ) {
 		$remainingNotifications = [];
 		foreach ( $notifications as $notification ) {
+			// If announcements are disabled and this is an announcement, skip adding it and move on.
+			if (
+				! aioseo()->options->advanced->announcements &&
+				'success' === $notification->type
+			) {
+				continue;
+			}
+
 			$levels = $notification->level;
 			if ( ! is_array( $levels ) ) {
 				$levels = empty( $notification->level ) ? [ 'all' ] : [ $notification->level ];
@@ -348,6 +358,7 @@ class Notification extends Model {
 
 			$remainingNotifications[] = $notification;
 		}
+
 		return $remainingNotifications;
 	}
 }

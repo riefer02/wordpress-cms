@@ -93,6 +93,7 @@ class Sitemap {
 
 		if ( $isGeneralSitemapStatic ) {
 			Models\Notification::deleteNotificationByName( 'sitemap-static-files' );
+
 			return;
 		}
 
@@ -104,7 +105,7 @@ class Sitemap {
 
 		$detectedFiles = [];
 		if ( ! $isGeneralSitemapStatic ) {
-			foreach ( $files as $index => $filename ) {
+			foreach ( $files as $filename ) {
 				if ( preg_match( '#.*sitemap.*#', $filename ) ) {
 					// We don't want to delete the video sitemap here at all.
 					$isVideoSitemap = preg_match( '#.*video.*#', $filename ) ? true : false;
@@ -129,6 +130,7 @@ class Sitemap {
 	protected function maybeShowStaticSitemapNotification( $detectedFiles ) {
 		if ( ! count( $detectedFiles ) ) {
 			Models\Notification::deleteNotificationByName( 'sitemap-static-files' );
+
 			return;
 		}
 
@@ -214,6 +216,7 @@ class Sitemap {
 		if ( preg_match( '#(.*sitemap[0-9]*?.xml|.*sitemap[0-9]*?.xml.gz|.*sitemap.rss)$#i', $request ) ) {
 			return $request;
 		}
+
 		return $redirect;
 	}
 
@@ -231,11 +234,12 @@ class Sitemap {
 			$params[] = 'aiosp_sitemap_page';
 		}
 
-		foreach ( $this->addons as $addon => $classes ) {
+		foreach ( $this->addons as $classes ) {
 			if ( ! empty( $classes['sitemap'] ) ) {
 				$params = $classes['sitemap']->addWhitelistParams( $params );
 			}
 		}
+
 		return $params;
 	}
 
@@ -282,13 +286,14 @@ class Sitemap {
 		$options = aioseo()->options->noConflict();
 		if ( ! $options->sitemap->{aioseo()->sitemap->type}->enable ) {
 			$this->notFoundPage();
+
 			return;
 		}
 
 		$entries = aioseo()->sitemap->content->get();
 		$total   = aioseo()->sitemap->content->getTotal();
 		if ( ! $entries ) {
-			foreach ( $this->addons as $addon => $classes ) {
+			foreach ( $this->addons as $classes ) {
 				if ( ! empty( $classes['content'] ) ) {
 					$entries = $classes['content']->get();
 					$total   = count( $entries );
@@ -316,7 +321,7 @@ class Sitemap {
 
 		$this->headers();
 		aioseo()->sitemap->output->output( $entries );
-		foreach ( $this->addons as $addon => $classes ) {
+		foreach ( $this->addons as $classes ) {
 			if ( ! empty( $classes['output'] ) ) {
 				$classes['output']->output( $entries );
 			}
@@ -390,7 +395,7 @@ class Sitemap {
 		// The sitemap isn't statically generated if we get here.
 		$this->isStatic = false;
 
-		foreach ( $this->addons as $addon => $classes ) {
+		foreach ( $this->addons as $classes ) {
 			if ( ! empty( $classes['sitemap'] ) ) {
 				$classes['sitemap']->determineContext();
 			}
@@ -411,7 +416,7 @@ class Sitemap {
 	 * @return void
 	 */
 	protected function doesFileExist() {
-		foreach ( $this->addons as $addon => $classes ) {
+		foreach ( $this->addons as $classes ) {
 			if ( ! empty( $classes['sitemap'] ) ) {
 				$classes['sitemap']->doesFileExist();
 			}
@@ -520,7 +525,7 @@ class Sitemap {
 			exit;
 		}
 
-		foreach ( $this->addons as $addon => $classes ) {
+		foreach ( $this->addons as $classes ) {
 			if ( ! empty( $classes['sitemap'] ) ) {
 				$classes['sitemap']->xsl();
 			}

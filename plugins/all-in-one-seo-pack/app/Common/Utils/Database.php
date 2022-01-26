@@ -20,8 +20,16 @@ class Database {
 	 * @var array
 	 */
 	protected $customTables = [
+		'aioseo_cache',
+		'aioseo_links',
+		'aioseo_links_suggestions',
+		'aioseo_links_post_relationships',
 		'aioseo_notifications',
 		'aioseo_posts',
+		'aioseo_redirects',
+		'aioseo_redirects_404_logs',
+		'aioseo_redirects_hits',
+		'aioseo_redirects_logs',
 		'aioseo_terms'
 	];
 
@@ -116,6 +124,15 @@ class Database {
 	private $onDuplicate = [];
 
 	/**
+	 * Ignore clause for the INSERT query.
+	 *
+	 * @since 4.1.6
+	 *
+	 * @var array
+	 */
+	private $ignore = false;
+
+	/**
 	 * The where clause for the sql query.
 	 *
 	 * @since 4.0.0
@@ -197,6 +214,20 @@ class Database {
 	protected $escapeOptions = 0;
 
 	/**
+	 * A cache of all queries and their results.
+	 *
+	 * @var array
+	 */
+	private $cache = [];
+
+	/**
+	 * Whether or not to reset the cached results.
+	 *
+	 * @var boolean
+	 */
+	private $shouldResetCache = false;
+
+	/**
 	 * Constant for escape options.
 	 *
 	 * @since 4.0.0
@@ -257,11 +288,12 @@ class Database {
 	 */
 	public function getInstalledTables() {
 		$results = $this->db->get_results( 'SHOW TABLES', 'ARRAY_N' );
+
 		return ! empty( $results ) ? wp_list_pluck( $results, 0 ) : [];
 	}
 
 	/**
-	 * Gets all AIO installed tables.
+	 * Gets all columns from a table.
 	 *
 	 * @since 4.0.0
 	 *
@@ -269,8 +301,18 @@ class Database {
 	 * @return array         An array of custom AIO tables.
 	 */
 	public function getColumns( $table ) {
-		$results = $this->db->get_results( 'SHOW COLUMNS FROM `' . $this->prefix . $table . '`', 'ARRAY_N' );
-		return ! empty( $results ) ? wp_list_pluck( $results, 0 ) : [];
+		$installedTables = json_decode( aioseo()->internalOptions->database->installedTables, true );
+		$table           = $this->prefix . $table;
+		if ( isset( $installedTables[ $table ] ) ) {
+			if ( empty( $installedTables[ $table ] ) ) {
+				$installedTables[ $table ]                           = $this->db->get_col( 'SHOW COLUMNS FROM `' . $table . '`' );
+				aioseo()->internalOptions->database->installedTables = wp_json_encode( $installedTables );
+			}
+
+			return $installedTables[ $table ];
+		}
+
+		return [];
 	}
 
 	/**
@@ -282,8 +324,21 @@ class Database {
 	 * @return boolean        Whether or not the table exists.
 	 */
 	public function tableExists( $table ) {
-		$results = $this->db->get_results( "SHOW TABLES LIKE '" . $this->prefix . $table . "'" );
-		return ! ( empty( $results ) );
+		$table           = $this->prefix . $table;
+		$installedTables = json_decode( aioseo()->internalOptions->database->installedTables, true ) ?: [];
+		if ( isset( $installedTables[ $table ] ) ) {
+			return true;
+		}
+
+		$results = $this->db->get_results( "SHOW TABLES LIKE '" . $table . "'" );
+		if ( ! empty( $results ) ) {
+			$installedTables[ $table ]                           = [];
+			aioseo()->internalOptions->database->installedTables = wp_json_encode( $installedTables );
+
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -305,6 +360,7 @@ class Database {
 		if ( ! in_array( $column, $columns, true ) ) {
 			return false;
 		}
+
 		return true;
 	}
 
@@ -341,8 +397,13 @@ class Database {
 	public function __toString() {
 		switch ( strtoupper( $this->statement ) ) {
 			case 'INSERT':
+				$insert = 'INSERT ';
+				if ( $this->ignore ) {
+					$insert .= 'IGNORE ';
+				}
+				$insert .= 'INTO ' . $this->table;
 				$clauses   = [];
-				$clauses[] = "INSERT INTO $this->table";
+				$clauses[] = $insert;
 				$clauses[] = 'SET ' . implode( ', ', $this->set );
 				if ( ! empty( $this->onDuplicate ) ) {
 					$clauses[] = 'ON DUPLICATE KEY UPDATE ' . implode( ', ', $this->onDuplicate );
@@ -482,6 +543,7 @@ class Database {
 		$clauses[] = '/* %d = %d */';
 
 		$this->query = str_replace( '%%d = %%d', '%d = %d', str_replace( '%', '%%', implode( "\n", $clauses ) ) );
+
 		return $this->query;
 	}
 
@@ -511,6 +573,7 @@ class Database {
 		$this->reset();
 		$this->table = $includesPrefix ? $table : $this->prefix . $table;
 		$this->statement = $statement;
+
 		return $this;
 	}
 
@@ -524,6 +587,21 @@ class Database {
 	 * @return Database                Returns the Database class which can then be method chained for building the query.
 	 */
 	public function insert( $table = null, $includesPrefix = false ) {
+		return $this->start( $table, $includesPrefix, 'INSERT' );
+	}
+
+	/**
+	 * Shortcut method for start with INSERT IGNORE as the statement.
+	 *
+	 * @since 4.1.6
+	 *
+	 * @param  string  $table          The name of the table without the WordPress prefix unless includes_prefix is true.
+	 * @param  boolean $includesPrefix This determines if the table name includes the WordPress prefix or not.
+	 * @return Database                Returns the Database class which can then be method chained for building the query.
+	 */
+	public function insertIgnore( $table = null, $includesPrefix = false ) {
+		$this->ignore = true;
+
 		return $this->start( $table, $includesPrefix, 'INSERT' );
 	}
 
@@ -594,6 +672,7 @@ class Database {
 		}
 
 		$this->select = array_merge( $this->select, $this->escapeColNames( $args ) );
+
 		return $this;
 	}
 
@@ -791,6 +870,7 @@ class Database {
 	 */
 	public function join( $table, $conditions, $direction = '', $includesPrefix = false ) {
 		$this->join[] = [ $includesPrefix ? $table : $this->prefix . $table, $conditions, $direction ];
+
 		return $this;
 	}
 
@@ -805,6 +885,7 @@ class Database {
 	 */
 	public function union( $query, $distinct = true ) {
 		$this->union[] = [ $query, $distinct ];
+
 		return $this;
 	}
 
@@ -823,6 +904,7 @@ class Database {
 		}
 
 		$this->group = array_merge( $this->group, $args );
+
 		return $this;
 	}
 
@@ -863,6 +945,7 @@ class Database {
 	 */
 	public function orderDirection( $direction = 'ASC' ) {
 		$this->orderDirection = $direction;
+
 		return $this;
 	}
 
@@ -875,7 +958,12 @@ class Database {
 	 * @return Database        Returns the Database class which can be method chained for more query building.
 	 */
 	public function limit( $limit, $offset = null ) {
+		if ( ! $limit ) {
+			return $this;
+		}
+
 		$this->limit = ( null === $offset ) ? $limit : "$offset, $limit";
+
 		return $this;
 	}
 
@@ -942,6 +1030,20 @@ class Database {
 	 */
 	public function output( $output ) {
 		$this->output = $output;
+
+		return $this;
+	}
+
+	/**
+	 * Reset the cache so we make sure the query gets to the DB.
+	 *
+	 * @since 4.1.6
+	 *
+	 * @return Database Returns the Database class which can be method chained for more query building.
+	 */
+	public function resetCache() {
+		$this->shouldResetCache = true;
+
 		return $this;
 	}
 
@@ -955,12 +1057,25 @@ class Database {
 	 * @param  array             $params Optional extra parameters to pass to the db method call
 	 * @return array|object|null         Database query results.
 	 */
-	public function run( $reset = true, $return = 'results', $params = [] ) {
+	public function run( $reset = true, $return = 'results', $params = [] ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		if ( ! in_array( $return, [ 'results', 'col', 'var' ], true ) ) {
 			$return = 'results';
 		}
 
-		$prepare = $this->db->prepare( $this->query(), 1, 1 );
+		$prepare        = $this->db->prepare( $this->query(), 1, 1 );
+		$queryHash      = sha1( $this->query() );
+		$cacheTableName = $this->getCacheTableName();
+
+		// Pull the result from the in-memory cache if everything checks out.
+		if (
+			! $this->shouldResetCache &&
+			isset( $this->cache[ $cacheTableName ][ $queryHash ][ $return ] ) &&
+			empty( $this->join )
+		) {
+			$this->result = $this->cache[ $cacheTableName ][ $queryHash ][ $return ];
+
+			return $this;
+		}
 
 		switch ( $return ) {
 			case 'col':
@@ -979,6 +1094,11 @@ class Database {
 			$this->reset();
 		}
 
+		$this->cache[ $cacheTableName ][ $queryHash ][ $return ] = $this->result;
+
+		// Reset the cache trigger for the next run.
+		$this->shouldResetCache = false;
+
 		return $this;
 	}
 
@@ -991,11 +1111,12 @@ class Database {
 	 * @return void                The count total.
 	 */
 	public function count( $countColumn = '*' ) {
-		$results = $this->select( 'count(' . $countColumn . ') as count' )
+		$usingGroup = ! empty( $this->group );
+		$results    = $this->select( 'count(' . $countColumn . ') as count' )
 			->run()
 			->result();
 
-		return 1 === $this->numRows() ? (int) $results[0]->count : $this->numRows();
+		return 1 === $this->numRows() && ! $usingGroup ? (int) $results[0]->count : $this->numRows();
 	}
 
 	/**
@@ -1019,6 +1140,7 @@ class Database {
 	 */
 	public function model( $class ) {
 		$result = $this->result();
+
 		return ! empty( $result ) ? ( is_array( $result ) ? new $class( (array) current( $result ) ) : $result ) : new $class();
 	}
 
@@ -1143,6 +1265,7 @@ class Database {
 	public function execute( $sql, $results = false ) {
 		if ( $results ) {
 			$this->result = $this->db->get_results( $sql );
+
 			return $this;
 		}
 
@@ -1270,6 +1393,7 @@ class Database {
 			'select',
 			'set',
 			'onDuplicate',
+			'ignore',
 			'where',
 			'union',
 			'distinct',
@@ -1281,6 +1405,15 @@ class Database {
 			'join'
 		]
 	) {
+		// If we are not running a select query, let's bust the cache for this table.
+		$selectStatements = [ 'SELECT', 'SELECT DISTINCT' ];
+		if (
+			! empty( $this->statement ) &&
+			! in_array( $this->statement, $selectStatements, true )
+		) {
+			$this->bustCache( $this->getCacheTableName() );
+		}
+
 		foreach ( (array) $what as $var ) {
 			switch ( $var ) {
 				case 'group':
@@ -1296,6 +1429,7 @@ class Database {
 				case 'orderDirection':
 					$this->$var = 'ASC';
 					break;
+				case 'ignore':
 				case 'stripTags':
 					$this->$var = false;
 					break;
@@ -1346,10 +1480,51 @@ class Database {
 			foreach ( (array) $what as $which ) {
 				$return[ $which ] = $this->$which;
 			}
+
 			return $return;
 		} else {
 			return $this->$what;
 		}
+	}
+
+	/**
+	 * Get a table name for the cache key.
+	 *
+	 * @since 4.1.6
+	 *
+	 * @param  string $cacheTableName The table name to check against.
+	 * @return string                 The cache key table name.
+	 */
+	private function getCacheTableName( $cacheTableName = null ) {
+		$cacheTableName = empty( $cacheTableName ) ? $this->table : $cacheTableName;
+
+		foreach ( $this->customTables as $tableName ) {
+			if ( false !== stripos( $cacheTableName, $this->prefix . $tableName ) ) {
+				$cacheTableName = $tableName;
+				break;
+			}
+		}
+
+		return $cacheTableName;
+	}
+
+	/**
+	 * Busts the cache for the given table name.
+	 *
+	 * @since 4.1.6
+	 *
+	 * @param  string|null $tableName The table name.
+	 * @return void
+	 */
+	public function bustCache( $tableName = null ) {
+		if ( ! $tableName ) {
+			// Bust all the cache.
+			$this->cache = [];
+
+			return;
+		}
+
+		unset( $this->cache[ $tableName ] );
 	}
 
 	/**

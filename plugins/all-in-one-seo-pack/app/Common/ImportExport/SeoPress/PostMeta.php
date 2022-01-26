@@ -82,6 +82,7 @@ class PostMeta {
 
 		if ( ! $posts || ! count( $posts ) ) {
 			aioseo()->cache->delete( 'import_post_meta_seopress' );
+
 			return;
 		}
 
@@ -108,7 +109,7 @@ class PostMeta {
 		}
 
 		if ( count( $posts ) === $postsPerAction ) {
-			aioseo()->helpers->scheduleSingleAction( aioseo()->importExport->seoPress->postActionName, 5 );
+			aioseo()->helpers->scheduleSingleAction( aioseo()->importExport->seoPress->postActionName, 5, [], true );
 		} else {
 			aioseo()->cache->delete( 'import_post_meta_seopress' );
 		}
@@ -122,7 +123,7 @@ class PostMeta {
 	 * @param object $postMeta The post meta from database.
 	 * @return array           The meta data.
 	 */
-	public function getMetaData( $postMeta, $post_id ) {
+	public function getMetaData( $postMeta, $postId ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		$meta = [];
 		foreach ( $postMeta as $record ) {
 			$name  = $record->meta_key;

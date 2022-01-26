@@ -53,7 +53,8 @@ class Meta {
 	 */
 	public function migratePostMeta() {
 		if ( aioseo()->cache->get( 'v3_migration_in_progress_settings' ) ) {
-			aioseo()->helpers->scheduleSingleAction( 'aioseo_migrate_post_meta', 30 );
+			aioseo()->helpers->scheduleSingleAction( 'aioseo_migrate_post_meta', 30, [], true );
+
 			return;
 		}
 
@@ -75,6 +76,7 @@ class Meta {
 
 		if ( ! $postsToMigrate || ! count( $postsToMigrate ) ) {
 			aioseo()->cache->delete( 'v3_migration_in_progress_posts' );
+
 			return;
 		}
 
@@ -208,6 +210,7 @@ class Meta {
 					break;
 			}
 		}
+
 		return $meta;
 	}
 
@@ -452,6 +455,7 @@ class Meta {
 		$titleFormat = isset( $oldOptions[ "aiosp_${postType}_title_format" ] ) ? $oldOptions[ "aiosp_${postType}_title_format" ] : '';
 
 		$seoTitle = aioseo()->helpers->pregReplace( '/(%post_title%|%page_title%)/', $seoTitle, $titleFormat );
+
 		return aioseo()->helpers->sanitizeOption( aioseo()->migration->helpers->macrosToSmartTags( $seoTitle ) );
 	}
 }

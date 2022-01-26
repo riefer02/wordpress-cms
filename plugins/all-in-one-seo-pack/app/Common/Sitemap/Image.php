@@ -32,14 +32,20 @@ class Image {
 			return;
 		}
 
-		// Don't schedule a scan if an importer is running.
-		if ( aioseo()->importExport->isImportRunning() ) {
+		// NOTE: This needs to go above the is_admin check in order for it to run at all.
+		add_action( $this->imageScanAction, [ $this, 'scanPosts' ] );
+
+		// Don't schedule a scan if we are not in the admin.
+		if ( ! is_admin() ) {
 			return;
 		}
 
-		add_action( $this->imageScanAction, [ $this, 'scanPosts' ] );
-
 		if ( wp_doing_ajax() || wp_doing_cron() ) {
+			return;
+		}
+
+		// Don't schedule a scan if an importer is running.
+		if ( aioseo()->importExport->isImportRunning() ) {
 			return;
 		}
 
@@ -93,7 +99,8 @@ class Image {
 			->result();
 
 		if ( ! $posts ) {
-			aioseo()->helpers->scheduleSingleAction( $this->imageScanAction, 15 * MINUTE_IN_SECONDS );
+			aioseo()->helpers->scheduleSingleAction( $this->imageScanAction, 15 * MINUTE_IN_SECONDS, [], true );
+
 			return;
 		}
 
@@ -101,7 +108,7 @@ class Image {
 			$this->scanPost( $post );
 		}
 
-		aioseo()->helpers->scheduleSingleAction( $this->imageScanAction, 30 );
+		aioseo()->helpers->scheduleSingleAction( $this->imageScanAction, 30, [], true );
 	}
 
 	/**
@@ -119,16 +126,19 @@ class Image {
 
 		if ( ! empty( $post->post_password ) ) {
 			$this->updatePost( $post->ID );
+
 			return;
 		}
 
 		if ( 'attachment' === $post->post_type ) {
 			if ( ! wp_attachment_is( 'image', $post ) ) {
 				$this->updatePost( $post->ID );
+
 				return;
 			}
 			$image = $this->buildEntries( [ $post->ID ] );
 			$this->updatePost( $post->ID, $image );
+
 			return;
 		}
 
@@ -150,10 +160,11 @@ class Image {
 
 		if ( ! $images ) {
 			$this->updatePost( $post->ID );
+
 			return;
 		}
 
-		$images = apply_filters( 'aioseo_sitemap_images', $images );
+		$images = apply_filters( 'aioseo_sitemap_images', $images, $post );
 
 		// Limit to a 1,000 URLs, in accordance to Google's specifications.
 		$images = array_slice( $images, 0, 1000 );
@@ -177,6 +188,7 @@ class Image {
 		if ( ! $id ) {
 			return [];
 		}
+
 		return $this->buildEntries( [ $id ] );
 	}
 
@@ -195,6 +207,7 @@ class Image {
 		}
 
 		$productImageIds = explode( ',', $productImageIds );
+
 		return is_array( $productImageIds ) ? $productImageIds : [];
 	}
 
@@ -221,6 +234,7 @@ class Image {
 				'image:caption' => wp_get_attachment_caption( $id )
 			];
 		}
+
 		return $entries;
 	}
 
@@ -263,6 +277,7 @@ class Image {
 		foreach ( $matches[1] as $url ) {
 			$urls[] = aioseo()->helpers->makeUrlAbsolute( $url );
 		}
+
 		return array_unique( $urls );
 	}
 
@@ -279,6 +294,7 @@ class Image {
 		foreach ( $urls as $url ) {
 			$preparedUrls[] = aioseo()->helpers->removeImageDimensions( $url );
 		}
+
 		return array_filter( $preparedUrls );
 	}
 

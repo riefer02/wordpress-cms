@@ -84,6 +84,7 @@ class Content {
 				if ( 'root' === aioseo()->sitemap->indexName && aioseo()->options->sitemap->general->indexes ) {
 					return count( aioseo()->sitemap->root->indexes() );
 				}
+
 				return count( $this->nonIndexed() );
 			default:
 				// Check if requested index has a dedicated method.
@@ -136,6 +137,7 @@ class Content {
 		}
 
 		$included = aioseo()->sitemap->helpers->includedPostTypes();
+
 		return ! empty( $included );
 	}
 
@@ -162,6 +164,7 @@ class Content {
 				$entries = array_merge( $entries, $this->terms( $taxonomy ) );
 			}
 		}
+
 		return $entries;
 	}
 
@@ -214,6 +217,7 @@ class Content {
 				$entries[] = $entry;
 			}
 		}
+
 		return apply_filters( 'aioseo_sitemap_posts', $entries, $postType );
 	}
 
@@ -338,6 +342,7 @@ class Content {
 				];
 			}
 		}
+
 		return apply_filters( 'aioseo_sitemap_post_archives', $entries );
 	}
 
@@ -382,6 +387,7 @@ class Content {
 				'images'     => aioseo()->sitemap->image->term( $term )
 			];
 		}
+
 		return apply_filters( 'aioseo_sitemap_terms', $entries, $taxonomy );
 	}
 
@@ -463,6 +469,7 @@ class Content {
 				];
 			}
 		}
+
 		return apply_filters( 'aioseo_sitemap_additional_pages', $entries );
 	}
 
@@ -511,6 +518,7 @@ class Content {
 				'priority'   => aioseo()->sitemap->priority->priority( 'author' ),
 			];
 		}
+
 		return apply_filters( 'aioseo_sitemap_author_archives', $entries );
 	}
 
@@ -579,6 +587,7 @@ class Content {
 			$entry['loc'] = get_month_link( $date->year, $date->month );
 			$entries[]    = $entry;
 		}
+
 		return apply_filters( 'aioseo_sitemap_date_archives', $entries );
 	}
 
@@ -614,6 +623,7 @@ class Content {
 		usort( $entries, function( $a, $b ) {
 			return $a['pubDate'] < $b['pubDate'] ? 1 : 0;
 		});
+
 		return apply_filters( 'aioseo_sitemap_rss', $entries );
 	}
 }

@@ -51,6 +51,7 @@ class UserMeta {
 
 		if ( ! $usersMeta || ! count( $usersMeta ) ) {
 			aioseo()->cache->delete( 'import_user_meta_yoast_seo' );
+
 			return;
 		}
 
@@ -60,7 +61,7 @@ class UserMeta {
 
 		if ( count( $usersMeta ) === $usersPerAction ) {
 			aioseo()->cache->update( 'import_user_meta_yoast_seo', 100 + $offset, WEEK_IN_SECONDS );
-			aioseo()->helpers->scheduleSingleAction( aioseo()->importExport->yoastSeo->userActionName, 5 );
+			aioseo()->helpers->scheduleSingleAction( aioseo()->importExport->yoastSeo->userActionName, 5, [], true );
 		} else {
 			aioseo()->cache->delete( 'import_user_meta_yoast_seo' );
 		}

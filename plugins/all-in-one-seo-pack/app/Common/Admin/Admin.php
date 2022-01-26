@@ -127,6 +127,9 @@ class Admin {
 	 * @return void
 	 */
 	private function setPages() {
+		// TODO: Remove this after a couple months.
+		$newIndicator = '<span class="aioseo-menu-new-indicator">&nbsp;NEW!</span>';
+
 		$this->pages = [
 			$this->pageSlug            => [
 				'menu_title' => esc_html__( 'Dashboard', 'all-in-one-seo-pack' ),
@@ -148,10 +151,12 @@ class Admin {
 				'menu_title' => esc_html__( 'Sitemaps', 'all-in-one-seo-pack' ),
 				'parent'     => $this->pageSlug
 			],
-			// 'aioseo-internal-links'    => [
-			//  'menu_title' => esc_html__( 'Internal Links', 'all-in-one-seo-pack' ),
-			//  'parent'     => $this->pageSlug
-			// ],
+			'aioseo-link-assistant'    => [
+				'menu_title' => esc_html__( 'Link Assistant', 'all-in-one-seo-pack' ) . $newIndicator,
+				'page_title' => esc_html__( 'Link Assistant', 'all-in-one-seo-pack' ),
+				'capability' => 'aioseo_link_assistant_settings',
+				'parent'     => $this->pageSlug
+			],
 			'aioseo-redirects'         => [
 				'menu_title' => esc_html__( 'Redirects', 'all-in-one-seo-pack' ),
 				'parent'     => $this->pageSlug
@@ -380,7 +385,7 @@ class Admin {
 	 */
 	protected function addAdminBarMenuItems() {
 		global $wp_admin_bar;
-		foreach ( $this->adminBarMenuItems as $key => $item ) {
+		foreach ( $this->adminBarMenuItems as $item ) {
 			$wp_admin_bar->add_menu( $item );
 		}
 	}
@@ -394,7 +399,8 @@ class Admin {
 	 */
 	public function addPageAnalyzerMenuItems() {
 		global $wp;
-		$url = home_url( $wp->request );
+		// Make sure the trailing slash matches the site configuration.
+		$url = user_trailingslashit( home_url( $wp->request ) );
 
 		if ( ! $url ) {
 			return;
@@ -447,7 +453,7 @@ class Admin {
 			[
 				'id'    => 'aioseo-analyze-page-pagespeed',
 				'title' => esc_html__( 'Google Page Speed Test', 'all-in-one-seo-pack' ),
-				'href'  => '//developers.google.com/speed/pagespeed/insights/?url=' . $url,
+				'href'  => 'https://pagespeed.web.dev/report?url=' . $url,
 			],
 			[
 				'id'    => 'aioseo-analyze-page-google-mobile-friendly',
@@ -551,6 +557,7 @@ class Admin {
 				if ( ! empty( $currentObject ) && ! empty( $currentObject->post_type ) ) {
 					// Try the main query.
 					$editPostLink = get_edit_post_link( $currentObject->ID );
+
 					return [
 						'id'   => $currentObject->ID,
 						'link' => $editPostLink . '#aioseo'
@@ -694,6 +701,7 @@ class Admin {
 		foreach ( $submenu['tools.php'] as $index => $props ) {
 			if ( ! empty( $props[2] ) && 'action-scheduler' === $props[2] ) {
 				unset( $submenu['tools.php'][ $index ] );
+
 				return;
 			}
 		}
@@ -747,7 +755,7 @@ class Admin {
 			'search-appearance',
 			'social-networks',
 			'sitemaps',
-			'internal-links',
+			'link-assistant',
 			'redirects',
 			'local-seo',
 			'seo-analysis',
@@ -962,6 +970,7 @@ class Admin {
 				return true;
 			}
 		}
+
 		return false;
 	}
 
@@ -1141,6 +1150,7 @@ class Admin {
 		if ( $this->isAllowedScreen( $screen->base, $screen->post_type ) ) {
 			$this->renderColumn( $columnName, $postId );
 		}
+
 		return null;
 	}
 
@@ -1273,10 +1283,11 @@ class Admin {
 
 		if ( empty( $posts ) ) {
 			aioseo()->cache->delete( 'unslash_escaped_data_posts' );
+
 			return;
 		}
 
-		aioseo()->helpers->scheduleSingleAction( 'aioseo_unslash_escaped_data_posts', 120 );
+		aioseo()->helpers->scheduleSingleAction( 'aioseo_unslash_escaped_data_posts', 120, [], true );
 
 		foreach ( $posts as $post ) {
 			$aioseoPost = Models\Post::getPost( $post->post_id );
@@ -1438,6 +1449,7 @@ class Admin {
 
 		$messages['post']['trashed'] = $messages['post']['trashed'] . '&nbsp;<a href="' . $url . '">' . $addRedirect . '</a> |';
 		$messages['page']['trashed'] = $messages['page']['trashed'] . '&nbsp;<a href="' . $url . '">' . $addRedirect . '</a> |';
+
 		return $messages;
 	}
 
@@ -1459,6 +1471,7 @@ class Admin {
 		if ( $score >= 80 ) {
 			$scoreClass = 'score-green';
 		}
+
 		return $scoreClass;
 	}
 

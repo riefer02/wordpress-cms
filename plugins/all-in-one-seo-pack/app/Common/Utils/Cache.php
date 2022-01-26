@@ -49,15 +49,6 @@ class Cache {
 	protected $prefix = '';
 
 	/**
-	 * Class constructor.
-	 *
-	 * @since 4.1.5
-	 */
-	public function __construct() {
-		$this->prune = new CachePrune();
-	}
-
-	/**
 	 * Returns the cache value for a key if it exists and is not expired.
 	 *
 	 * @since 4.1.5

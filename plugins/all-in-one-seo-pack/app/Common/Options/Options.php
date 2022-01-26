@@ -217,6 +217,7 @@ TEMPLATE
 			'twitter'            => [
 				'general'  => [
 					'enable'                  => [ 'type' => 'boolean', 'default' => true ],
+					'useOgData'               => [ 'type' => 'boolean', 'default' => true ],
 					'defaultCardType'         => [ 'type' => 'string', 'default' => 'summary' ],
 					'defaultImageSourcePosts' => [ 'type' => 'string', 'default' => 'default' ],
 					'customFieldImagePosts'   => [ 'type' => 'string' ],

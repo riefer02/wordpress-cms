@@ -47,10 +47,12 @@ trait WpUri {
 	public function getUrl( $canonical = false ) {
 		if ( is_singular() ) {
 			$object = get_queried_object_id();
+
 			return $canonical ? wp_get_canonical_url( $object ) : get_permalink( $object );
 		}
 
 		global $wp;
+
 		return trailingslashit( home_url( $wp->request ) );
 	}
 
@@ -103,7 +105,7 @@ trait WpUri {
 	}
 
 	/**
-	 * Formats a given URl as an absolute URL if it is relative.
+	 * Formats a given URL as an absolute URL if it is relative.
 	 *
 	 * @since 4.0.0
 	 *
@@ -119,6 +121,7 @@ trait WpUri {
 				$url = home_url( $url );
 			}
 		}
+
 		return $url;
 	}
 
@@ -189,6 +192,7 @@ trait WpUri {
 	 */
 	public function getWpContentUrl() {
 		$info = wp_get_upload_dir();
+
 		return isset( $info['baseurl'] ) ? $info['baseurl'] : '';
 	}
 
@@ -211,8 +215,10 @@ trait WpUri {
 			// In that case we can still check if a post exists for the path by quering the DB.
 			// TODO: Add support for terms here.
 			$post = $this->getPostbyPath( $path, OBJECT, $this->getPublicPostTypes( true ) );
+
 			return is_object( $post );
 		}
+
 		return 200 === $status;
 	}
 
@@ -238,6 +244,7 @@ trait WpUri {
 			if ( '0' === $cached || 0 === $cached ) {
 				return false;
 			}
+
 			return get_post( $cached, $output );
 		}
 
@@ -289,6 +296,7 @@ trait WpUri {
 
 		// We cache misses as well as hits.
 		wp_cache_set( $cacheKey, $foundId, 'aioseo_posts_by_path' );
+
 		return $foundId ? get_post( $foundId, $output ) : false;
 	}
 

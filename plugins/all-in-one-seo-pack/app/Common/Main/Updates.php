@@ -112,7 +112,7 @@ class Updates {
 		if ( version_compare( $lastActiveVersion, '4.1.5', '<' ) ) {
 			aioseo()->helpers->unscheduleAction( 'aioseo_cleanup_action_scheduler' );
 			// Schedule routine to remove our old transients from the options table.
-			aioseo()->helpers->scheduleSingleAction( aioseo()->cache->prune->getOptionCacheCleanAction(), MINUTE_IN_SECONDS );
+			aioseo()->helpers->scheduleSingleAction( aioseo()->cachePrune->getOptionCacheCleanAction(), MINUTE_IN_SECONDS );
 
 			// Refresh with new Redirects capability.
 			$this->accessControlNewCapabilities();
@@ -121,6 +121,19 @@ class Updates {
 			aioseo()->sitemap->regenerateStaticSitemap();
 
 			$this->fixSchemaTypeDefault();
+		}
+
+		if ( version_compare( $lastActiveVersion, '4.1.6', '<' ) ) {
+			// Clear the cache so addons get reset.
+			aioseo()->cache->clear();
+
+			// Remove the recurring scheduled action for notifications.
+			aioseo()->helpers->unscheduleAction( 'aioseo_admin_notifications_update' );
+
+			$this->migrateOgTwitterImageColumns();
+
+			// Set the OG data to false for current installs.
+			aioseo()->options->social->twitter->general->useOgData = false;
 		}
 
 		do_action( 'aioseo_run_updates', $lastActiveVersion );
@@ -151,9 +164,17 @@ class Updates {
 	 * @return void
 	 */
 	public function updateLatestVersion() {
-		if ( aioseo()->version !== aioseo()->internalOptions->internal->lastActiveVersion ) {
-			aioseo()->internalOptions->internal->lastActiveVersion = aioseo()->version;
+		if ( aioseo()->internalOptions->internal->lastActiveVersion === aioseo()->version ) {
+			return;
 		}
+
+		aioseo()->internalOptions->internal->lastActiveVersion = aioseo()->version;
+
+		// Bust the tableExists and columnExists cache.
+		aioseo()->internalOptions->database->installedTables = '';
+
+		// Bust the DB cache so we can make sure that everything is fresh.
+		aioseo()->db->bustCache();
 	}
 
 	/**
@@ -269,6 +290,9 @@ class Updates {
 				) {$charsetCollate};"
 			);
 		}
+
+		// Reset the cache for the installed tables.
+		aioseo()->internalOptions->database->installedTables = '';
 	}
 
 	/**
@@ -304,6 +328,9 @@ class Updates {
 				"ALTER TABLE {$tableName}
 				ADD image_scan_date datetime DEFAULT NULL AFTER images"
 			);
+
+			// Reset the cache for the installed tables.
+			aioseo()->internalOptions->database->installedTables = '';
 		}
 	}
 
@@ -425,6 +452,9 @@ class Updates {
 				"ALTER TABLE {$tableName}
 				ADD new tinyint(1) NOT NULL DEFAULT 1 AFTER dismissed"
 			);
+
+			// Reset the cache for the installed tables.
+			aioseo()->internalOptions->database->installedTables = '';
 
 			aioseo()->db
 				->update( 'aioseo_notifications' )
@@ -618,6 +648,56 @@ class Updates {
 				"ALTER TABLE {$tableName}
 				MODIFY schema_type varchar(20) DEFAULT 'default'"
 			);
+		}
+	}
+
+	/**
+	 * Add in image with/height columns and image URL for caching.
+	 *
+	 * @since 4.1.6
+	 *
+	 * @return void
+	 */
+	protected function migrateOgTwitterImageColumns() {
+		if ( aioseo()->db->tableExists( 'aioseo_posts' ) ) {
+			$tableName = aioseo()->db->db->prefix . 'aioseo_posts';
+
+			// OG Columns.
+			if ( ! aioseo()->db->columnExists( 'aioseo_posts', 'og_image_url' ) ) {
+				aioseo()->db->execute(
+					"ALTER TABLE {$tableName} ADD og_image_url text DEFAULT NULL AFTER og_image_type"
+				);
+			}
+
+			if ( aioseo()->db->columnExists( 'aioseo_posts', 'og_custom_image_height' ) ) {
+				aioseo()->db->execute(
+					"ALTER TABLE {$tableName} CHANGE COLUMN og_custom_image_height og_image_height int(11) DEFAULT NULL AFTER og_image_url"
+				);
+			} elseif ( ! aioseo()->db->columnExists( 'aioseo_posts', 'og_image_height' ) ) {
+				aioseo()->db->execute(
+					"ALTER TABLE {$tableName} ADD og_image_height int(11) DEFAULT NULL AFTER og_image_url"
+				);
+			}
+
+			if ( aioseo()->db->columnExists( 'aioseo_posts', 'og_custom_image_width' ) ) {
+				aioseo()->db->execute(
+					"ALTER TABLE {$tableName} CHANGE COLUMN og_custom_image_width og_image_width int(11) DEFAULT NULL AFTER og_image_url"
+				);
+			} elseif ( ! aioseo()->db->columnExists( 'aioseo_posts', 'og_image_width' ) ) {
+				aioseo()->db->execute(
+					"ALTER TABLE {$tableName} ADD og_image_width int(11) DEFAULT NULL AFTER og_image_url"
+				);
+			}
+
+			// Twitter image url columnn.
+			if ( ! aioseo()->db->columnExists( 'aioseo_posts', 'twitter_image_url' ) ) {
+				aioseo()->db->execute(
+					"ALTER TABLE {$tableName} ADD twitter_image_url text DEFAULT NULL AFTER twitter_image_type"
+				);
+			}
+
+			// Reset the cache for the installed tables.
+			aioseo()->internalOptions->database->installedTables = '';
 		}
 	}
 }

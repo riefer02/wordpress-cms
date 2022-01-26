@@ -2,8 +2,8 @@
 Contributors: aioseo, smub, benjaminprojas
 Tags: SEO, Google Search Console, XML Sitemap, meta description, schema, meta title, rich snippets, woocommerce seo, local seo, open graph, google news sitemap, video sitemap, robots.txt, seo audit, content analysis, seo plugin, redirection
 Requires at least: 4.9
-Tested up to: 5.8.2
-Stable tag: 4.1.5.3
+Tested up to: 5.8.3
+Stable tag: 4.1.6.2
 License: GPLv2 or later
 Requires PHP: 5.4
 
@@ -201,13 +201,69 @@ Visit <a href="http://www.wpbeginner.com/" rel="friend" title="WPBeginner">WPBeg
 
 == Changelog ==
 
+**New in Version 4.1.6.2**
+
+* NEW: Support for ThirstyAffiliates and external affiliate links.
+* NEW: Support for links/suggestions in inner blocks in the block editor.
+* Updated: Improved database performance for inserting links and suggestions.
+* Fixed: Internal links considered external on sites running on www.
+* Fixed: Link Assistant tab in metabox sometimes not rendering in the Classic Editor.
+* Fixed: Pagination breaking when navigating between tabs.
+* Fixed: Dashboard loading slowly when cache is busted.
+* Fixed: Cached OG image sometimes output instead of the cached Twitter image.
+
+**New in Version 4.1.6.1**
+
+* Updated: Link Assistant now refreshes all menus when the settings are saved.
+* Fixed: Permissions for users with custom roles for the AIOSEO REST API.
+* Fixed: Relative URLs for the OG:image are now made absolute again before output.
+* Fixed: Removing a custom separator wasn't correctly reflected in the preview.
+* Fixed: Long permalinks in the social preview sometimes overflowed their container.
+* Fixed: PHP notice from breadcrumb trail if it contains special unescaped characters.
+* Fixed: Yoast Duplicate Post no longer duplicating AIOSEO meta data when cloning a post.
+* Fixed: SEO Analyzer didn't add a trailing slash to the analyzed URL when the permalink structure should have one.
+* Fixed: Link phrase sometimes not highlighted in the context paragraph when it contains special characters like parentheses.
+* Fixed: Link Suggestions tab incorrectly defaulting to the Outbound Suggestions (instead of the Inbound Suggestions) in the metabox.
+* Fixed: Missing RTL stylesheets.
+
+**New in Version 4.1.6**
+
+* New: Our brand-new Link Assistant helps you super-charge your SEO! Get relevant suggestions for adding internal links to older content as well as finding any orphaned posts that have no internal links. Use our reporting feature to see all link suggestions or add them directly from any page or post.
+* New: Standalone Headline Analyzer page in the SEO Analysis menu.
+* New: Show update messages for addons that are out of sync with the main plugin.
+* Updated: Open Graph/Twitter image is now cached (when possible) to improve performance.
+* Updated: Calls to attachmentUrlToPostId() are now cached to improve performance.
+* Updated: Semrush integration now displays an alert when usage limit is reached.
+* Updated: TruSEO now supports accent marks for various languages.
+* Updated: TruSEO now ignores special characters in the URL.
+* Updated: TruSEO now detects internal links better.
+* Updated: Various database performance updates, most notably reducing duplicate queries and caching updates.
+* Updated: Removed deprecated twitter:domain tag.
+* Updated: PageSpeed Insights link in SEO Toolbar now refers to Google's new platform.
+* Updated: Reordered display options for Local SEO/Breadcrumbs/HTML Sitemap to keep them consistent.
+* Updated: Increased maximum height for General/Social modals in the Edit Post screen for a better UX on large screens.
+* Fixed: Access Control sometimes fails when user role alphabetically comes after AIOSEO roles.
+* Fixed: Non-critical notifications are now hidden when announcements are disabled.
+* Fixed: Incorrect Last Modified timestamp for all entries after the static sitemap entry.
+* Fixed: Conflict with Jetpack Boost plugin which rendered AIOSEO sitemaps inaccessible.
+* Fixed: PHP error in WordPress 4.9 due to undefined do_blocks() function call.
+* Fixed: PHP notice when importing SEO settings from other plugins if static homepage option is selected under Reading but no static homepage is set.
+* Fixed: PHP notice when visiting a non-existing rss feed page.
+* Fixed: Conflict with User Role Editor plugin where capabilities couldn't be saved.
+* Fixed: Sitemap links per index can no longer be set to a negative number.
+* Fixed: Recipe schema now allows cooking time of 0 minutes.
+* Fixed: WooCommerce Product schema price now also takes taxes into account.
+* Fixed: HTML Sitemap no longer displays irrelevant options when Compact Archives setting is enabled.
+* Fixed: HTML Sitemap now shows a message when no posts/terms could be found.
+* Fixed: Schema tab is now visible again when editing WooCommerce Terms of Service page.
+
 **New in Version 4.1.5.3**
 
 * Updated: Security hardening for REST API endpoints
 
 **New in Version 4.1.5.2**
 
-* Fixed: Conflicts with third-party plugins that may cause shortcodes to fail parsing
+* Fixed: Conflicts with third-party plugins that may cause shortcodes to fail parsing 
 
 **New in Version 4.1.5.1**
 
@@ -705,6 +761,6 @@ AIOSEO is the original WordPress SEO plugin, and it's trusted by over 3 million 
 
 == Upgrade Notice ==
 
-= 4.1.5.3 =
+= 4.1.6.2 =
 
 This update adds major improvements and bugfixes.

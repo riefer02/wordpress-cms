@@ -11,6 +11,10 @@ class ComposerStaticInit64aea086b704a6bf091b60f2270a7daf
     );
 
     public static $prefixLengthsPsr4 = array (
+        'V' => 
+        array (
+            'VariableAnalysis\\' => 17,
+        ),
         'S' => 
         array (
             'Symfony\\Polyfill\\Ctype\\' => 23,
@@ -21,9 +25,17 @@ class ComposerStaticInit64aea086b704a6bf091b60f2270a7daf
             'Psr\\Container\\' => 14,
             'PPVersionNotices\\' => 17,
         ),
+        'D' => 
+        array (
+            'Dealerdirect\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\' => 55,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
+        'VariableAnalysis\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/sirbrillig/phpcs-variable-analysis/VariableAnalysis',
+        ),
         'Symfony\\Polyfill\\Ctype\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
@@ -39,6 +51,10 @@ class ComposerStaticInit64aea086b704a6bf091b60f2270a7daf
         'PPVersionNotices\\' => 
         array (
             0 => __DIR__ . '/..' . '/publishpress/wordpress-version-notices/src',
+        ),
+        'Dealerdirect\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/dealerdirect/phpcodesniffer-composer-installer/src',
         ),
     );
 

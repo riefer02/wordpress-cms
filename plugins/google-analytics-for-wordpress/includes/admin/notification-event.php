@@ -55,6 +55,22 @@ class MonsterInsights_Notification_Event {
 	 */
 	public $notification_type;
 
+    /**
+     * Category of this notification: alert or insight
+     *
+     * @var string
+     *
+     * @since 8.2.0
+     */
+    public $notification_category;
+
+    /**
+     * Priority of this notification: 1-3
+     *
+     * @var int
+     */
+    public $notification_priority;
+
 	/**
 	 * Report start date if required e.g: "-15 day"(Readable Time)
 	 *
@@ -188,11 +204,15 @@ class MonsterInsights_Notification_Event {
 		$notification['btns']    = array();
 		$notification['start']   = $this->notification_active_from;
 		$notification['end']     = $this->notification_active_for;
+		$notification['category']     = $this->notification_category;
+		$notification['priority']     = $this->notification_priority;
 		$notification_data       = $this->prepare_notification_data( $notification );
 
 		if ( is_array( $notification_data ) && ! empty( $notification_data ) ) {
-			MonsterInsights()->notifications->add( $notification_data );
+			return MonsterInsights()->notifications->add( $notification_data );
 		}
+
+		return false;
 	}
 
 	/**

@@ -257,6 +257,7 @@ class Query {
 
 			$excludedObjects = esc_sql( implode( ', ', $ids ) );
 		}
+
 		return $excludedObjects;
 	}
 }

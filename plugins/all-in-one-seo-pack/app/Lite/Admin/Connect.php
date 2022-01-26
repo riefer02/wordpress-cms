@@ -74,6 +74,7 @@ class Connect {
 
 		if ( 'aioseo-connect-pro' === wp_unslash( $_GET['page'] ) ) { // phpcs:ignore HM.Security.ValidatedSanitizedInput.InputNotSanitized
 			$this->loadConnectPro();
+
 			return;
 		}
 
@@ -299,6 +300,7 @@ class Connect {
 		if ( ! is_wp_error( $active ) ) {
 			// Deactivate plugin.
 			deactivate_plugins( plugin_basename( AIOSEO_FILE ), false, false );
+
 			return [
 				'error' => esc_html__( 'Pro version is already installed.', 'all-in-one-seo-pack' )
 			];

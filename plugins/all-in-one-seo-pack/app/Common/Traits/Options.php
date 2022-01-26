@@ -140,6 +140,7 @@ trait Options {
 
 		if ( ! isset( $defaults[ $name ] ) ) {
 			$this->resetGroups();
+
 			return ! empty( $this->arguments[0] )
 				? $this->arguments[0]
 				: $this->getDefault( $name, false );
@@ -311,7 +312,7 @@ trait Options {
 		}
 
 		$originalDefaults = json_decode( wp_json_encode( $cachedOptions[ $this->groupKey ] ), true );
-		$pointer          = &$originalDefaults;
+		$pointer          = &$originalDefaults; // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		foreach ( $this->subGroups as $subGroup ) {
 			$pointer = &$pointer[ $subGroup ];
 		}
@@ -349,6 +350,7 @@ trait Options {
 
 		if ( ! isset( $defaults[ $name ] ) ) {
 			$this->resetGroups();
+
 			return false;
 		}
 
@@ -390,6 +392,7 @@ trait Options {
 		if ( ! isset( $defaults[ $name ] ) ) {
 			$this->groupKey  = null;
 			$this->subGroups = [];
+
 			return;
 		}
 
@@ -439,15 +442,17 @@ trait Options {
 
 		if ( empty( $originalSubGroups ) ) {
 			$all = $refactored[ $originalGroupKey ];
+
 			return $this->allFiltered( $all, $include, $exclude );
 		}
 
-		$returnable = &$refactored[ $originalGroupKey ];
+		$returnable = &$refactored[ $originalGroupKey ]; // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		foreach ( $originalSubGroups as $subGroup ) {
 			$returnable = &$returnable[ $subGroup ];
 		}
 
 		$this->resetGroups();
+
 		return $this->allFiltered( $returnable, $include, $exclude );
 	}
 
@@ -495,7 +500,7 @@ trait Options {
 		$defaults    = array_replace_recursive( $defaults, $resetValues );
 
 		$originalDefaults = json_decode( wp_json_encode( $cachedOptions[ $originalGroupKey ] ), true );
-		$pointer          = &$originalDefaults;
+		$pointer          = &$originalDefaults; // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		foreach ( $originalSubGroups as $subGroup ) {
 			$pointer = &$pointer[ $subGroup ];
 		}
@@ -593,7 +598,7 @@ trait Options {
 	 */
 	private function allFiltered( $all, $include, $exclude ) {
 		if ( ! empty( $include ) ) {
-			return array_intersect_ukey( $all, $include, function ( $key1, $key2 ) use ( $include ) {
+			return array_intersect_ukey( $all, $include, function ( $key1, $key2 ) use ( $include ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 				if ( in_array( $key1, $include, true ) ) {
 					return 0;
 				}
@@ -603,7 +608,7 @@ trait Options {
 		}
 
 		if ( ! empty( $exclude ) ) {
-			return array_diff_ukey( $all, $exclude, function ( $key1, $key2 ) use ( $exclude ) {
+			return array_diff_ukey( $all, $exclude, function ( $key1, $key2 ) use ( $exclude ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 				if ( ! in_array( $key1, $exclude, true ) ) {
 					return 0;
 				}
@@ -738,6 +743,7 @@ trait Options {
 	public function filterOptions( $defaults, $options = null ) {
 		$cachedOptions = aioseo()->optionsCache->getOptions( $this->optionsName );
 		$options       = ! empty( $options ) ? $options : json_decode( wp_json_encode( $cachedOptions ), true );
+
 		return $this->filterRecursively( $options, $defaults );
 	}
 
@@ -794,6 +800,7 @@ trait Options {
 				foreach ( (array) $value as $k => $v ) {
 					$array[ $k ] = sanitize_text_field( $preserveHtml ? htmlspecialchars( $v, ENT_NOQUOTES, 'UTF-8' ) : $v );
 				}
+
 				return $array;
 			case 'float':
 				return floatval( $value );
@@ -818,6 +825,7 @@ trait Options {
 			$groups = array_keys( $this->defaultsMerged );
 			if ( in_array( $name, $groups, true ) ) {
 				$this->groupKey = $name;
+
 				return true;
 			}
 
@@ -1047,6 +1055,7 @@ trait Options {
 	public function noConflict() {
 		$class          = clone $this;
 		$class->isClone = true;
+
 		return $class;
 	}
 

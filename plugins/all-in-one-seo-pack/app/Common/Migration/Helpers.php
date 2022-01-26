@@ -189,6 +189,7 @@ class Helpers {
 		}
 
 		$string = preg_replace( '/%([a-f0-9]{2}[^%]*)%/i', '#$1#', $string );
+
 		return $string;
 	}
 

@@ -32,7 +32,7 @@ class File {
 	 * @return void
 	 */
 	public function generate( $force = false ) {
-		foreach ( aioseo()->sitemap->addons as $addon => $classes ) {
+		foreach ( aioseo()->sitemap->addons as $classes ) {
 			if ( ! empty( $classes['file'] ) ) {
 				$classes['file']->generate( $force );
 			}
@@ -208,6 +208,7 @@ class File {
 			foreach ( $files as $filename => $data ) {
 				$this->writeSitemap( $filename, $data['entries'], $data['total'] );
 			}
+
 			return;
 		}
 
@@ -243,7 +244,7 @@ class File {
 
 		ob_start();
 		aioseo()->sitemap->output->output( $entries, $total );
-		foreach ( aioseo()->sitemap->addons as $addon => $classes ) {
+		foreach ( aioseo()->sitemap->addons as $classes ) {
 			if ( ! empty( $classes['output'] ) ) {
 				$classes['output']->output( $entries, $total );
 			}
@@ -275,7 +276,7 @@ class File {
 		}
 
 		$sitemapFiles = [];
-		foreach ( $files as $index => $filename ) {
+		foreach ( $files as $filename ) {
 			if ( preg_match( '#.*sitemap.*#', $filename ) ) {
 				$sitemapFiles[] = $filename;
 			}

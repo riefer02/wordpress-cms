@@ -21,6 +21,11 @@ class Activate {
 		register_activation_hook( AIOSEO_FILE, [ $this, 'activate' ] );
 		register_deactivation_hook( AIOSEO_FILE, [ $this, 'deactivate' ] );
 
+		// The following only needs to happen when in the admin.
+		if ( ! is_admin() ) {
+			return;
+		}
+
 		// This needs to run on at least 1000 because we load the roles in the Access class on 999.
 		add_action( 'init', [ $this, 'init' ], 1000 );
 	}
@@ -54,7 +59,7 @@ class Activate {
 	 * @param  bool $networkWide Whether or not this is a network wide activation.
 	 * @return void
 	 */
-	public function activate( $networkWide ) {
+	public function activate( $networkWide ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		aioseo()->access->addCapabilities();
 
 		// Make sure our tables exist.
@@ -67,6 +72,9 @@ class Activate {
 		if ( ! aioseo()->internalOptions->internal->firstActivated ) {
 			aioseo()->internalOptions->internal->firstActivated = $time;
 		}
+
+		// Bust the tableExists and columnExists cache.
+		aioseo()->internalOptions->database->installedTables = '';
 
 		aioseo()->cache->clear();
 

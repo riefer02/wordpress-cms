@@ -114,6 +114,7 @@ trait Shortcodes {
 		}
 
 		$tagsToRemove = array_diff( $tags, $allowedTags );
+
 		return $this->doShortcodes( $content, $tagsToRemove, true );
 	}
 

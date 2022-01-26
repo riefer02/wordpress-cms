@@ -39,6 +39,7 @@ class Htaccess {
 		}
 
 		$contents = @$wpfs->get_contents( $this->path );
+
 		return aioseo()->helpers->encodeOutputHtml( $contents );
 	}
 

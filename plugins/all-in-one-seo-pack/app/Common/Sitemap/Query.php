@@ -146,6 +146,7 @@ class Query {
 			default:
 				break;
 		}
+
 		return $query;
 	}
 
@@ -188,6 +189,7 @@ class Query {
 		}
 
 		$query->whereRaw( "p.ID NOT IN ( $hiddenProductIds )" );
+
 		return $query;
 	}
 
@@ -242,6 +244,7 @@ class Query {
 		) {
 			return true;
 		}
+
 		return false;
 	}
 
@@ -321,6 +324,7 @@ class Query {
 			// Add taxonomy name to object manually instead of querying it to prevent redundant join.
 			$term->taxonomy = $taxonomy;
 		}
+
 		return $terms;
 	}
 

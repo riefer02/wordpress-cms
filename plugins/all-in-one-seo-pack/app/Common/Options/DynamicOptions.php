@@ -318,8 +318,7 @@ class DynamicOptions {
 	 * @return array The default options.
 	 */
 	protected function getDefaultSearchAppearanceOptions() {
-		// phpcs:disable WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
-		return [
+		return [ // phpcs:disable WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 			'show'     => [ 'type' => 'boolean', 'default' => true ],
 			'advanced' => [
 				'robotsMeta'                => [
@@ -339,8 +338,7 @@ class DynamicOptions {
 				'showPostThumbnailInSearch' => [ 'type' => 'boolean', 'default' => true ],
 				'showMetaBox'               => [ 'type' => 'boolean', 'default' => true ]
 			]
-		];
-		// phpcs:enable WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
+		]; // phpcs:enable WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 	}
 
 	/**

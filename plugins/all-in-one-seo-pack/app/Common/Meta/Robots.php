@@ -101,27 +101,32 @@ class Robots {
 
 		if ( is_home() && 'posts' === get_option( 'show_on_front' ) ) {
 			$this->globalValues();
+
 			return $this->metaHelper();
 		}
 
 		$post = aioseo()->helpers->getPost();
 		if ( $post ) {
 			$this->post();
+
 			return $this->metaHelper();
 		}
 
 		if ( is_author() ) {
 			$this->globalValues( [ 'archives', 'author' ] );
+
 			return $this->metaHelper();
 		}
 
 		if ( is_date() ) {
 			$this->globalValues( [ 'archives', 'date' ] );
+
 			return $this->metaHelper();
 		}
 
 		if ( is_search() ) {
 			$this->globalValues( [ 'archives', 'search' ] );
+
 			return $this->metaHelper();
 		}
 
@@ -131,6 +136,7 @@ class Robots {
 
 		if ( is_archive() ) {
 			$this->archives();
+
 			return $this->metaHelper();
 		}
 	}
@@ -174,6 +180,7 @@ class Robots {
 		}
 
 		$this->attributes = apply_filters( 'aioseo_robots_meta', $this->attributes );
+
 		return implode( ', ', array_filter( $this->attributes ) );
 	}
 
@@ -191,6 +198,7 @@ class Robots {
 
 		if ( ! empty( $metaData ) && ! $metaData->robots_default ) {
 			$this->metaValues( $metaData );
+
 			return;
 		}
 
@@ -212,10 +220,12 @@ class Robots {
 
 		if ( $dynamicOptions->searchAppearance->taxonomies->has( $term->taxonomy ) ) {
 			$this->globalValues( [ 'taxonomies', $term->taxonomy ], true );
+
 			return$this->metaHelper();
 		}
 
 		$this->globalValues();
+
 		return $this->metaHelper();
 	}
 
@@ -367,6 +377,7 @@ class Robots {
 	 */
 	private function isPasswordProtected() {
 		$post = aioseo()->helpers->getPost();
+
 		return is_object( $post ) && $post->post_password;
 	}
 }

@@ -56,6 +56,9 @@ class InternalOptions {
 				'results'      => [ 'type' => 'string' ],
 				'competitors'  => [ 'type' => 'array', 'default' => [], 'preserveHtml' => true ]
 			],
+			'headlineAnalysis'  => [
+				'headlines' => [ 'type' => 'array', 'default' => [] ]
+			],
 			'wizard'            => [ 'type' => 'string' ],
 			'category'          => [ 'type' => 'string' ],
 			'categoryOther'     => [ 'type' => 'string' ],
@@ -68,6 +71,9 @@ class InternalOptions {
 				'expires'      => [ 'type' => 'string' ],
 				'refreshToken' => [ 'type' => 'string' ]
 			]
+		],
+		'database'     => [
+			'installedTables' => [ 'type' => 'string' ]
 		]
 		// phpcs:enable WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
 	];

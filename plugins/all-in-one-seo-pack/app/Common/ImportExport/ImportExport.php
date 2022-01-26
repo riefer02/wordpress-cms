@@ -49,7 +49,7 @@ class ImportExport {
 		$sectionLabel = '';
 		$sectionCount = 0;
 
-		foreach ( $lines as $lineNumber => $line ) {
+		foreach ( $lines as $line ) {
 			$line = trim( $line );
 			// Ignore comments.
 			if ( preg_match( '#^;.*#', $line ) || preg_match( '#\<(\?php|script)#', $line ) ) {
@@ -123,6 +123,7 @@ class ImportExport {
 		if ( ! empty( $postData ) ) {
 			$this->importOldPostMeta( $postData );
 		}
+
 		return true;
 	}
 
@@ -282,6 +283,7 @@ class ImportExport {
 				foreach ( (array) $value as $k => $v ) {
 					$sanitized[ $k ] = $this->convertAndSanitize( $v );
 				}
+
 				return $sanitized;
 			default:
 				return '';
@@ -304,6 +306,7 @@ class ImportExport {
 		foreach ( $this->plugins as $pluginData ) {
 			if ( $pluginData['slug'] === $plugin ) {
 				$pluginData['class']->doImport( $settings );
+
 				return;
 			}
 		}

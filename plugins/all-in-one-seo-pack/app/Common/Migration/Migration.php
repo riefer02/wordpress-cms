@@ -30,7 +30,12 @@ class Migration {
 		$this->meta    = new Meta();
 		$this->helpers = new Helpers();
 
+		// NOTE: This needs to go above the is_admin check in order for it to run at all.
 		add_action( 'aioseo_migrate_post_meta', [ $this->meta, 'migratePostMeta' ] );
+
+		if ( ! is_admin() ) {
+			return;
+		}
 
 		if ( wp_doing_ajax() || wp_doing_cron() ) {
 			return;
@@ -152,6 +157,7 @@ class Migration {
 		if ( ! isset( $this->oldOptions['modules']['aiosp_feature_manager_options'] ) ) {
 			new Sitemap();
 			aioseo()->cache->delete( 'v3_migration_in_progress_settings' );
+
 			return;
 		}
 

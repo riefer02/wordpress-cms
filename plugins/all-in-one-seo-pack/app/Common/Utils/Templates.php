@@ -85,7 +85,7 @@ class Templates {
 	 * @param  null   $data         Data passed down to the template.
 	 * @return void
 	 */
-	public function getTemplate( $templateName, $data = null ) {
+	public function getTemplate( $templateName, $data = null ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 		$template = $this->locateTemplate( $templateName );
 		if ( ! empty( $template ) and file_exists( $template ) ) {
 			include $template;

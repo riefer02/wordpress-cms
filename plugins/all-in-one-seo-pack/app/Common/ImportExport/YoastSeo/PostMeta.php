@@ -63,6 +63,7 @@ class PostMeta {
 
 		if ( ! $posts || ! count( $posts ) ) {
 			aioseo()->cache->delete( 'import_post_meta_yoast_seo' );
+
 			return;
 		}
 

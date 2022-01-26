@@ -669,7 +669,7 @@ class TypeRegistry {
 			return;
 		}
 
-		if ( isset( $this->types[ $this->format_key( $type_name ) ] ) ) {
+		if ( isset( $this->types[ $this->format_key( $type_name ) ] ) || isset( $this->type_loaders[ $this->format_key( $type_name ) ] ) ) {
 			graphql_debug(
 				sprintf( __( 'You cannot register duplicate Types to the Schema. The Type \'%1$s\' already exists in the Schema. Make sure to give new Types a unique name.', 'wp-graphql' ), $type_name ),
 				[
@@ -815,7 +815,8 @@ class TypeRegistry {
 	 *
 	 * @param string $type_name The name of the Type to get from the registry
 	 *
-	 * @return mixed|null
+	 * @return mixed
+	 * |null
 	 */
 	public function get_type( string $type_name ) {
 
@@ -1157,8 +1158,16 @@ class TypeRegistry {
 						// Translators: The placeholder is the name of the mutation
 						throw new Exception( sprintf( __( 'The resolver for the mutation %s is not callable', 'wp-graphql' ), $mutation_name ) );
 					}
-					$payload                     = call_user_func( $mutateAndGetPayload, $args['input'], $context, $info );
-					$payload['clientMutationId'] = $args['input']['clientMutationId'];
+
+					$filtered_input = apply_filters( 'graphql_mutation_input', $args['input'], $context, $info, $mutation_name );
+
+					$payload = call_user_func( $mutateAndGetPayload, $filtered_input, $context, $info );
+
+					do_action( 'graphql_mutation_response', $payload, $filtered_input, $args['input'], $context, $info, $mutation_name );
+
+					if ( ! empty( $args['input']['clientMutationId'] ) ) {
+						$payload['clientMutationId'] = $args['input']['clientMutationId'];
+					}
 
 					return $payload;
 				},

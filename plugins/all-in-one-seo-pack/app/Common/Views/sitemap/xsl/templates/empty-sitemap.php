@@ -30,7 +30,7 @@ if ( 'xml-sitemap' !== $data['utmMedium'] ) {
 	<div class="empty-sitemap">
 		<h2 class="empty-sitemap__title">
 			<?php _e( 'Whoops!', 'all-in-one-seo-pack' ); ?>
-			<br/>
+			<br />
 			<?php _e( 'There are no posts here', 'all-in-one-seo-pack' ); ?>
 		</h2>
 		<div class="empty-sitemap__buttons">

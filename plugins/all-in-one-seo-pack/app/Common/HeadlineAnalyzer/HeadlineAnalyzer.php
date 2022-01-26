@@ -110,6 +110,7 @@ class HeadlineAnalyzer {
 		if ( ! $title || ' ' === $title || trim( $title ) === '' ) {
 			$result->err = true;
 			$result->msg = 'The headline is invalid.';
+
 			return $result;
 		}
 
@@ -243,6 +244,7 @@ class HeadlineAnalyzer {
 				$foundMatches[] = $word;
 			}
 		}
+
 		return $foundMatches;
 	}
 

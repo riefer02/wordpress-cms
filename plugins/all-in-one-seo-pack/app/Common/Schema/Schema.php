@@ -130,12 +130,14 @@ class Schema {
 		if ( is_front_page() ) {
 			$this->graphs[] = 'posts' === get_option( 'show_on_front' ) ? 'CollectionPage' : 'WebPage';
 			$this->context  = $context->home();
+
 			return;
 		}
 
 		if ( is_home() || aioseo()->helpers->isWooCommerceShopPage() ) {
 			$this->graphs[] = 'CollectionPage';
 			$this->context  = $context->post();
+
 			return;
 		}
 
@@ -145,6 +147,7 @@ class Schema {
 			// Check if we're on a BuddyPress member page.
 			if ( function_exists( 'bp_is_user' ) && bp_is_user() ) {
 				array_push( $this->graphs, 'ProfilePage', 'PersonAuthor' );
+
 				return;
 			}
 
@@ -156,6 +159,7 @@ class Schema {
 			$postGraphs = $this->getPostGraphs( $post );
 			if ( is_array( $postGraphs ) ) {
 				$this->graphs = array_merge( $this->graphs, $postGraphs );
+
 				return;
 			}
 			$this->graphs[] = $postGraphs;
@@ -164,30 +168,35 @@ class Schema {
 		if ( is_category() || is_tag() || is_tax() ) {
 			$this->graphs[] = 'CollectionPage';
 			$this->context  = $context->term();
+
 			return;
 		}
 
 		if ( is_author() ) {
 			array_push( $this->graphs, 'CollectionPage', 'PersonAuthor' );
 			$this->context = $context->author();
+
 			return;
 		}
 
 		if ( is_post_type_archive() ) {
 			$this->graphs[] = 'CollectionPage';
 			$this->context  = $context->postArchive();
+
 			return;
 		}
 
 		if ( is_date() ) {
 			$this->graphs[] = 'CollectionPage';
 			$this->context  = $context->date();
+
 			return;
 		}
 
 		if ( is_search() ) {
 			$this->graphs[] = 'SearchResultsPage';
 			$this->context  = $context->search();
+
 			return;
 		}
 
@@ -230,6 +239,7 @@ class Schema {
 				if ( in_array( $schemaType, $this->webPageGraphs, true ) ) {
 					return ucfirst( $schemaType );
 				}
+
 				return [ 'WebPage', ucfirst( $schemaType ) ];
 		}
 	}
@@ -256,6 +266,7 @@ class Schema {
 				$data[ $k ] = $v;
 			}
 		}
+
 		return $data;
 	}
 }

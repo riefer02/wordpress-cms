@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '43f95552d3cb4c46dcbb7494a7a470564dbe8fce',
+        'reference' => '5c824a12bc2f6524daffe01fa936957a757e52ea',
         'name' => 'awesomemotive/all-in-one-seo-pack-pro',
         'dev' => false,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '43f95552d3cb4c46dcbb7494a7a470564dbe8fce',
+            'reference' => '5c824a12bc2f6524daffe01fa936957a757e52ea',
             'dev_requirement' => false,
         ),
         'jwhennessey/phpinsight' => array(
