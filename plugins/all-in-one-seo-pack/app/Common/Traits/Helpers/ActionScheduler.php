@@ -55,19 +55,28 @@ trait ActionScheduler {
 	 * @param  array   $args       Args passed down to the action.
 	 * @return boolean             Whether the action is already scheduled.
 	 */
-	public function isScheduledAction( $actionName, $args = [] ) { // phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
+	public function isScheduledAction( $actionName, $args = [] ) {
 		// We need to check for pending actions specifically since we otherwise cannot schedule another action while one is running (e.g. image and video sitemap scans).
+		$pendingArgs = [
+			'hook'     => $actionName,
+			'status'   => \ActionScheduler_Store::STATUS_PENDING,
+			'per_page' => 1
+		];
+
+		$runningArgs = [
+			'hook'     => $actionName,
+			'status'   => \ActionScheduler_Store::STATUS_RUNNING,
+			'per_page' => 1
+		];
+
+		if ( ! empty( $args ) ) {
+			$pendingArgs['args'] = $args;
+			$runningArgs['args'] = $args;
+		}
+
 		$actions = array_merge(
-			as_get_scheduled_actions( [
-				'hook'     => $actionName,
-				'status'   => \ActionScheduler_Store::STATUS_PENDING,
-				'per_page' => 1
-			]),
-			as_get_scheduled_actions( [
-				'hook'     => $actionName,
-				'status'   => \ActionScheduler_Store::STATUS_RUNNING,
-				'per_page' => 1
-			])
+			as_get_scheduled_actions( $pendingArgs ),
+			as_get_scheduled_actions( $runningArgs )
 		);
 
 		return ! empty( $actions );

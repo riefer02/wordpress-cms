@@ -24,6 +24,7 @@ class Updates {
 			return;
 		}
 
+		add_action( 'aioseo_loaded', [ $this, 'runPreAddonUpdates' ], 1 );
 		add_action( 'init', [ $this, 'init' ], 1001 );
 		add_action( 'init', [ $this, 'runUpdates' ], 1002 );
 		add_action( 'init', [ $this, 'updateLatestVersion' ], 3000 );
@@ -57,6 +58,15 @@ class Updates {
 		$this->addInitialCustomTablesForV4();
 		add_action( 'wp_loaded', [ $this, 'setDefaultSocialImages' ], 1001 );
 	}
+
+	/**
+	 * Run Pre-addon updates/migrations.
+	 *
+	 * @since 4.1.8
+	 *
+	 * @return void
+	 */
+	public function runPreAddonUpdates() {}
 
 	/**
 	 * Runs our migrations.
@@ -134,6 +144,13 @@ class Updates {
 
 			// Set the OG data to false for current installs.
 			aioseo()->options->social->twitter->general->useOgData = false;
+		}
+
+		if ( version_compare( $lastActiveVersion, '4.1.8', '<' ) ) {
+			$this->addLimitModifiedDateColumn();
+
+			// Refresh with new Redirects Page capability.
+			$this->accessControlNewCapabilities();
 		}
 
 		do_action( 'aioseo_run_updates', $lastActiveVersion );
@@ -695,6 +712,26 @@ class Updates {
 					"ALTER TABLE {$tableName} ADD twitter_image_url text DEFAULT NULL AFTER twitter_image_type"
 				);
 			}
+
+			// Reset the cache for the installed tables.
+			aioseo()->internalOptions->database->installedTables = '';
+		}
+	}
+
+	/**
+	 * Adds the limit modified date column to our posts table.
+	 *
+	 * @since 4.1.8
+	 *
+	 * @return void
+	 */
+	private function addLimitModifiedDateColumn() {
+		if ( ! aioseo()->db->columnExists( 'aioseo_posts', 'limit_modified_date' ) ) {
+			$tableName = aioseo()->db->db->prefix . 'aioseo_posts';
+			aioseo()->db->execute(
+				"ALTER TABLE {$tableName}
+				ADD limit_modified_date tinyint(1) NOT NULL DEFAULT 0 AFTER local_seo"
+			);
 
 			// Reset the cache for the installed tables.
 			aioseo()->internalOptions->database->installedTables = '';

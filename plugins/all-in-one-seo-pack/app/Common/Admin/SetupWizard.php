@@ -141,38 +141,11 @@ class SetupWizard {
 		remove_all_actions( 'admin_notices' );
 		remove_all_actions( 'all_admin_notices' );
 
-		// Scripts.
-		aioseo()->helpers->enqueueScript(
-			'aioseo-vendors',
-			'js/chunk-vendors.js'
-		);
-		aioseo()->helpers->enqueueScript(
-			'aioseo-common',
-			'js/chunk-common.js'
-		);
+		aioseo()->helpers->enqueueChunkedAssets();
 		aioseo()->helpers->enqueueScript(
 			'aioseo-setup-wizard-script',
 			'js/setup-wizard.js'
 		);
-
-		// Styles.
-		$rtl = is_rtl() ? '.rtl' : '';
-		aioseo()->helpers->enqueueStyle(
-			'aioseo-vendors',
-			"css/chunk-vendors$rtl.css"
-		);
-		aioseo()->helpers->enqueueStyle(
-			'aioseo-common',
-			"css/chunk-common$rtl.css"
-		);
-		// aioseo()->helpers->enqueueStyle(
-		//  'aioseo-setup-wizard-style',
-		//  "css/setup-wizard$rtl.css"
-		// );
-		// aioseo()->helpers->enqueueStyle(
-		//  'aioseo-setup-wizard-vendors-style',
-		//  "css/chunk-setup-wizard-vendors$rtl.css"
-		// );
 
 		wp_localize_script(
 			'aioseo-setup-wizard-script',

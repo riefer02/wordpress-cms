@@ -712,30 +712,6 @@ TEMPLATE
 	}
 
 	/**
-	 * Set a redirection URL after saving options or a slug ( 'reload' )
-	 *
-	 * @since 4.0.17
-	 *
-	 * @param  string $urlOrSlug
-	 * @return void
-	 */
-	public function setRedirection( $urlOrSlug ) {
-		$this->screenRedirection = $urlOrSlug;
-	}
-
-	/**
-	 * Get the redirection URL after saving options
-	 *
-	 * @since 4.0.17
-	 *
-	 * @return boolean|string The screen redirection URL.
-	 */
-	public function getRedirection() {
-		return $this->screenRedirection ? $this->screenRedirection : false;
-	}
-
-
-	/**
 	 * Indicate we need to flush rewrite rules on next load.
 	 *
 	 * @since 4.0.17

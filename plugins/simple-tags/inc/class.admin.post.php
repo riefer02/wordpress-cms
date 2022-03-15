@@ -26,11 +26,16 @@ class SimpleTags_Admin_Post_Settings {
 	 * @author WebFactory Ltd
 	 */
 	public static function add_meta_boxes( $post_type ) {
-		// Get auto options
-		$auto_options = get_option( STAGS_OPTIONS_NAME_AUTO );
-		$taxonomies = get_object_taxonomies( $post_type );
+
+        $click_terms = taxopress_current_post_suggest_terms();
+        $autolink = taxopress_post_type_autolink_autolink();
+
+        if(!is_array($click_terms) && !is_array($autolink)){
+            return;
+        }
+
 		// Auto terms for this CPT ?
-		add_meta_box( 'simpletags-settings', __( 'TaxoPress - Settings', 'simple-tags' ), array(
+		add_meta_box( 'simpletags-settings', __( 'TaxoPress', 'simple-tags' ), array(
 			__CLASS__,
 			'metabox'
 		), $post_type, 'side', 'low' );
@@ -49,14 +54,11 @@ class SimpleTags_Admin_Post_Settings {
 			return;
 		}
 
-		// Get auto options
-		$auto_options = get_option( STAGS_OPTIONS_NAME_AUTO );
-
 		// Auto terms for this CPT ?
             if(1 === (int) SimpleTags_Plugin::get_option_value( 'active_auto_terms' )){
 			    $meta_value = get_post_meta( $post->ID, '_exclude_autotags', true );
 			    echo '<p>' . "\n";
-			    echo '<label><input type="checkbox" name="exclude_autotags" value="true" ' . checked( $meta_value, true, false ) . ' /> ' . __( 'Disable Auto Terms', 'simple-tags' ) . '</label><br />' . "\n";
+			    echo '<label><input type="checkbox" name="exclude_autotags" value="true" ' . checked( esc_attr($meta_value), true, false ) . ' /> ' . esc_html__( 'Disable Auto Terms', 'simple-tags' ) . '</label><br />' . "\n";
 			    echo '</p>' . "\n";
 			    echo '<input type="hidden" name="_meta_autotags" value="true" />';
             }
@@ -64,7 +66,7 @@ class SimpleTags_Admin_Post_Settings {
             if(1 === (int) SimpleTags_Plugin::get_option_value( 'active_auto_links' )){
     			$meta_value = get_post_meta( $post->ID, '_exclude_autolinks', true );
 	    		echo '<p>' . "\n";
-		    	echo '<label><input type="checkbox" name="exclude_autolinks" value="true" ' . checked( $meta_value, true, false ) . ' /> ' . __( 'Disable Auto Links', 'simple-tags' ) . '</label><br />' . "\n";
+		    	echo '<label><input type="checkbox" name="exclude_autolinks" value="true" ' . checked( esc_attr($meta_value), true, false ) . ' /> ' . esc_html__( 'Disable Auto Links', 'simple-tags' ) . '</label><br />' . "\n";
 			    echo '</p>' . "\n";
 			    echo '<input type="hidden" name="_meta_autolink" value="true" />';
             }

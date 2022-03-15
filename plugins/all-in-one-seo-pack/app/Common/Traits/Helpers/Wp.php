@@ -66,7 +66,8 @@ trait Wp {
 		}
 	}
 
-	/** Whether or not we should enqueue a file.
+	/**
+	 * Whether or not we should enqueue a file.
 	 *
 	 * @since 4.0.0
 	 *
@@ -219,6 +220,14 @@ trait Wp {
 
 		$postStatuses = [];
 		foreach ( $allStatuses as $status => $data ) {
+			if (
+				! $data->public &&
+				! $data->protected &&
+				! $data->private
+			) {
+				continue;
+			}
+
 			if ( $statusesOnly ) {
 				$postStatuses[] = $status;
 				continue;
@@ -385,7 +394,7 @@ trait Wp {
 
 		foreach ( $dbUsers as $dbUser ) {
 			$users[] = [
-				'id'          => intval( $dbUser->ID ),
+				'id'          => (int) $dbUser->ID,
 				'displayName' => $dbUser->display_name,
 				'niceName'    => $dbUser->user_nicename,
 				'email'       => $dbUser->user_email,
@@ -394,6 +403,44 @@ trait Wp {
 		}
 
 		return $users;
+	}
+
+	/**
+	 * Retrieve a list of site authors.
+	 *
+	 * @since 4.1.8
+	 *
+	 * @return array An array of user data.
+	 */
+	public function getSiteAuthors() {
+		$authors = aioseo()->cache->get( 'site_authors' );
+		if ( null === $authors ) {
+			// phpcs:disable WordPress.DB.SlowDBQuery, HM.Performance.SlowMetaQuery
+			global $wpdb;
+			$users = get_users(
+				[
+					'meta_key'     => $wpdb->prefix . 'user_level',
+					'meta_value'   => '0',
+					'meta_compare' => '!=',
+					'blog_id'      => 0
+				]
+			);
+			// phpcs:enable WordPress.DB.SlowDBQuery, HM.Performance.SlowMetaQuery
+
+			$authors = [];
+			foreach ( $users as $user ) {
+				$authors[] = [
+					'id'          => (int) $user->ID,
+					'displayName' => $user->display_name,
+					'niceName'    => $user->user_nicename,
+					'email'       => $user->user_email,
+					'gravatar'    => get_avatar_url( $user->user_email )
+				];
+			}
+			aioseo()->cache->update( 'site_authors', $authors, 12 * HOUR_IN_SECONDS );
+		}
+
+		return $authors;
 	}
 
 	/**
@@ -585,5 +632,23 @@ trait Wp {
 
 		$mofile = $domain . '-' . get_user_locale() . '.mo';
 		load_textdomain( $domain, WP_LANG_DIR . '/plugins/' . $mofile );
+	}
+
+	/**
+	 * Get the page builder the given Post ID was built with.
+	 *
+	 * @since 4.1.7
+	 *
+	 * @param  int         $postId The Post ID.
+	 * @return bool|string         The page builder or false if not built with page builders.
+	 */
+	public function getPostPageBuilderName( $postId ) {
+		foreach ( aioseo()->postSettings->integrations as $integration => $pageBuilder ) {
+			if ( $pageBuilder->isBuiltWith( $postId ) ) {
+				return $integration;
+			}
+		}
+
+		return false;
 	}
 }

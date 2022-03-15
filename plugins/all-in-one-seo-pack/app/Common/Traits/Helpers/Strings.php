@@ -283,6 +283,8 @@ trait Strings {
 			return $decodeHtmlEntities[ $string ];
 		}
 
+		// We must manually decode non-breaking spaces since html_entity_decode doesn't do this.
+		$string                        = $this->pregReplace( '/&nbsp;/', ' ', $string );
 		$decodeHtmlEntities[ $string ] = html_entity_decode( (string) $string, ENT_QUOTES );
 
 		return $decodeHtmlEntities[ $string ];
@@ -419,6 +421,9 @@ trait Strings {
 	 * @return string              The imploded array.
 	 */
 	public function implodeWhereIn( $array, $outerQuotes = false ) {
+		// Reset the keys first in case there is no 0 index.
+		$array = array_values( $array );
+
 		if ( ! isset( $array[0] ) ) {
 			return '';
 		}

@@ -48,7 +48,6 @@ class Schema {
 		'ItemPage',
 		'MedicalWebPage',
 		'ProfilePage',
-		'QAPage',
 		'RealEstateListing',
 		'SearchResultsPage'
 	];

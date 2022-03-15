@@ -28,7 +28,7 @@ class SimpleTags_Admin_ClickTags {
 	public static function admin_enqueue_scripts() {
 		global $pagenow;
 
-        $click_terms = taxopress_current_post_suggest_terms(true);
+        $click_terms = taxopress_current_post_suggest_terms('existing_terms');
 
         if(!is_array($click_terms)){
             return;
@@ -52,7 +52,7 @@ class SimpleTags_Admin_ClickTags {
         //add taxonomy
         $click_tags_taxonomy = '
         <div class="option">
-        <label>'.__( 'Taxonomy', 'simple-tags' ).'</label><br />
+        <label>'.esc_html__( 'Taxonomy', 'simple-tags' ).'</label><br />
         <select class="st-post-taxonomy-select click_tags_taxonomy" name="click_tags_taxonomy">';
         foreach ( $post_taxonomies as $_taxonomy ) {
             $_taxonomy = get_taxonomy($_taxonomy);
@@ -73,7 +73,7 @@ class SimpleTags_Admin_ClickTags {
         </div>';
 
         //add method
-        $click_tags_methods = ['name' => __( 'Name', 'simple-tags' ), 'count' => __( 'Counter', 'simple-tags' ), 'random' => __( 'Random', 'simple-tags' )];
+        $click_tags_methods = ['name' => esc_html__( 'Name', 'simple-tags' ), 'count' => esc_html__( 'Counter', 'simple-tags' ), 'random' => esc_html__( 'Random', 'simple-tags' )];
         $click_tags_method = '
         <div class="option">
         <label>'.__( 'Method for choosing terms', 'simple-tags' ).'</label><br />
@@ -86,7 +86,7 @@ class SimpleTags_Admin_ClickTags {
         </div>';
 
         //add order
-        $click_tags_orders = ['asc' =>  __( 'Ascending', 'simple-tags' ), 'desc' => __( 'Descending', 'simple-tags' )];
+        $click_tags_orders = ['asc' =>  esc_html__( 'Ascending', 'simple-tags' ), 'desc' => esc_html__( 'Descending', 'simple-tags' )];
         $click_tags_order = '
         <div class="option">
         <label>'.__( 'Ordering for choosing terms', 'simple-tags' ).'</label><br />
@@ -102,7 +102,7 @@ class SimpleTags_Admin_ClickTags {
         $click_tags_limit= '
         <div class="option">
         <label for="click_tags_limit">'.__( 'Maximum terms', 'simple-tags' ).'</label><br />
-        <input min="1" max="1000000000" type="number" class="click_tags_limit" id="click_tags_limit" name="click_tags_limit" value="'.$click_terms['number'].'">
+        <input type="number" class="click_tags_limit" id="click_tags_limit" name="click_tags_limit" value="'.$click_terms['number'].'">
         </div>';
 
         //add searchbox
@@ -114,17 +114,39 @@ class SimpleTags_Admin_ClickTags {
 
         //create tags search data
         $click_tags_options= '<div class="clicktags-search-wrapper">'. $click_tags_search.' '.$click_tags_taxonomy.' '.$click_tags_method.' '.$click_tags_order.' '.$click_tags_limit.'</div>';
-   
+
+		//metabox edit line
+		if(current_user_can('admin_simple_tags')){
+			$click_term_edit = '<span class="edit-suggest-term-metabox">
+			'. sprintf(
+				'<a href="%s">%s</a>',
+				add_query_arg(
+					[
+						'page'                   => 'st_suggestterms',
+						'add'                    => 'new_item',
+						'action'                 => 'edit',
+						'taxopress_suggestterms' => $click_terms['ID'],
+					],
+					admin_url('admin.php')
+				),
+				__('Edit this metabox', 'simple-tags')
+			)
+			.'
+			</span>';
+		}else {
+			$click_term_edit = '';
+		}
 		wp_localize_script(
 			'st-helper-click-tags',
 			'stHelperClickTagsL10n',
 			array(
-				'show_txt'    => __( 'Click to display tags', 'simple-tags' ),
-				'hide_txt'    => sprintf( __( 'Click terms to add them to this %s', 'simple-tags' ), $post_type_name ),
+				'show_txt'    => esc_html__( 'Click to display tags', 'simple-tags' ),
+				'hide_txt'    => sprintf( esc_html__( 'Click terms to add them to this %s', 'simple-tags' ), $post_type_name ),
 				'state'       => 'show',
 				'search_icon' => STAGS_URL . '/assets/images/indicator.gif',
 				'search_box'  => '<input type="text" class="click-tag-search-box" placeholder="'.__('Start typing to search', 'simple-tags').'" size="26" autocomplete="off">',
 				'click_tags_options'  => $click_tags_options,
+				'edit_metabox_link'   => $click_term_edit,
 			)
 		);
 
@@ -140,7 +162,7 @@ class SimpleTags_Admin_ClickTags {
 	 */
 	public static function admin_head() {
 
-        $click_terms = taxopress_current_post_suggest_terms(true);
+        $click_terms = taxopress_current_post_suggest_terms('existing_terms');
 
         if(!is_array($click_terms)){
             return;
@@ -165,6 +187,7 @@ class SimpleTags_Admin_ClickTags {
 	 * @author WebFactory Ltd
 	 */
 	public static function metabox() {
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo SimpleTags_Admin::getDefaultContentBox();
 	}
 
@@ -175,6 +198,7 @@ class SimpleTags_Admin_ClickTags {
 	 * @author WebFactory Ltd
 	 */
 	public static function ajax_check() {
+
 		if ( isset( $_GET['stags_action'] ) && 'click_tags' === $_GET['stags_action'] ) {
 			self::ajax_click_tags();
 		}
@@ -229,11 +253,15 @@ class SimpleTags_Admin_ClickTags {
 				$order    = 'ASC';
 				break;
 		}
-        
+
         $term_limit =  isset($_GET['click_tags_limit']) ? (int)$_GET['click_tags_limit'] : 100;
 
-        $limit = 'LIMIT 0, '.$term_limit;
-		
+        if ($term_limit > 0) {
+            $limit = 'LIMIT 0, '.$term_limit;
+        }else{
+            $limit = '';
+        }
+
         // Get all terms, or filter with search
 		$terms = SimpleTags_Admin::getTermsForAjax( $taxonomy, $search, $order_by, $order,  $limit );
 		if ( empty( $terms ) ) {
@@ -248,8 +276,8 @@ class SimpleTags_Admin_ClickTags {
 		}
 
 		foreach ( (array) $terms as $term ) {
-			$class_current = in_array( $term->term_id, $post_terms, true ) ? 'used_term' : '';
-			echo '<span data-term_id="'.$term->term_id.'" data-taxonomy="'.$taxonomy.'" class="local '.$taxonomy.' ' . esc_attr( $class_current ) . '">' . esc_html( stripslashes( $term->name ) ) . '</span>' . "\n";
+			$class_current = in_array($term->term_id, $post_terms) ? 'used_term' : '';
+			echo '<span data-term_id="'.esc_attr($term->term_id).'" data-taxonomy="'.esc_attr($taxonomy).'" class="local '.esc_attr($taxonomy).' ' . esc_attr( $class_current ) . '">' . esc_html( stripslashes( $term->name ) ) . '</span>' . "\n";
 		}
 		echo '<div class="clear"></div>';
 

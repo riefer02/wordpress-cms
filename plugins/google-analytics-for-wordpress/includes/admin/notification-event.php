@@ -195,21 +195,28 @@ class MonsterInsights_Notification_Event {
 	 * @since 7.12.3
 	 */
 	public function add_notification() {
-		$notification            = array();
-		$notification['id']      = $this->notification_id . '_' . date( 'Ymd' ); // Make sure we never add the same notification on the same day.
-		$notification['icon']    = $this->notification_icon;
-		$notification['title']   = '';
-		$notification['content'] = '';
-		$notification['type']    = $this->notification_type;
-		$notification['btns']    = array();
-		$notification['start']   = $this->notification_active_from;
-		$notification['end']     = $this->notification_active_for;
-		$notification['category']     = $this->notification_category;
-		$notification['priority']     = $this->notification_priority;
-		$notification_data       = $this->prepare_notification_data( $notification );
+		$notifications = MonsterInsights()->notifications;
+
+		$notification             = array();
+		$notification['id']       = $this->notification_id . '_' . date( 'Ymd' ); // Make sure we never add the same notification on the same day.
+		$notification['icon']     = $this->notification_icon;
+		$notification['title']    = '';
+		$notification['content']  = '';
+		$notification['type']     = $this->notification_type;
+		$notification['btns']     = array();
+		$notification['start']    = $this->notification_active_from;
+		$notification['end']      = $this->notification_active_for;
+		$notification['category'] = $this->notification_category;
+		$notification['priority'] = $this->notification_priority;
+
+		if ( $notifications->is_dismissed( $notification ) ) {
+			return false;
+		}
+
+		$notification_data = $this->prepare_notification_data( $notification );
 
 		if ( is_array( $notification_data ) && ! empty( $notification_data ) ) {
-			return MonsterInsights()->notifications->add( $notification_data );
+			return $notifications->add( $notification_data );
 		}
 
 		return false;

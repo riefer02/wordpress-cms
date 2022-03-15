@@ -206,10 +206,24 @@ class Admin {
 		include_once ABSPATH . 'wp-admin/includes/plugin.php';
 		if ( version_compare( $wp_version, '5.3', '>=' ) || is_plugin_active( 'gutenberg/gutenberg.php' ) ) {
 			add_action( 'current_screen', [ $this, 'addGutenbergLinkFormatScript' ] );
-			add_action( 'enqueue_block_editor_assets', function() {
-				wp_enqueue_script( 'aioseo-link-format' );
-			} );
+			add_action( 'enqueue_block_editor_assets', [ $this, 'enqueueBlockEditorLinkFormat' ] );
 		}
+	}
+
+	/**
+	 * Enqueues the link format script for the Block Editor.
+	 *
+	 * @since 4.1.8
+	 *
+	 * @return void
+	 */
+	public function enqueueBlockEditorLinkFormat() {
+		wp_enqueue_script( 'aioseo-link-format' );
+		aioseo()->helpers->enqueueStyle(
+			'aioseo-link-format',
+			'css/link-format-block.css',
+			false
+		);
 	}
 
 	/**
@@ -263,11 +277,13 @@ class Admin {
 			'wplink',
 			'aioseoL10n',
 			[
+				'title'          => esc_html__( 'Insert/edit link', 'all-in-one-seo-pack' ),
 				'update'         => esc_html__( 'Update', 'all-in-one-seo-pack' ),
 				'save'           => esc_html__( 'Add Link', 'all-in-one-seo-pack' ),
 				'noTitle'        => esc_html__( '(no title)', 'all-in-one-seo-pack' ),
 				'labelTitle'     => esc_html__( 'Title', 'all-in-one-seo-pack' ),
 				'noMatchesFound' => esc_html__( 'No results found.', 'all-in-one-seo-pack' ),
+				'linkSelected'   => esc_html__( 'Link selected.', 'all-in-one-seo-pack' ),
 				'linkInserted'   => esc_html__( 'Link has been inserted.', 'all-in-one-seo-pack' ),
 				// Translators: 1 - HTML whitespace character, 2 - Opening HTML code tag, 3 - Closing HTML code tag.
 				'noFollow'       => sprintf( esc_html__( '%1$sAdd %2$srel="nofollow"%3$s to link', 'all-in-one-seo-pack' ), '&nbsp;', '<code>', '</code>' ),
@@ -275,6 +291,8 @@ class Admin {
 				'sponsored'      => sprintf( esc_html__( '%1$sAdd %2$srel="sponsored"%3$s to link', 'all-in-one-seo-pack' ), '&nbsp;', '<code>', '</code>' ),
 				// Translators: 1 - HTML whitespace character, 2 - Opening HTML code tag, 3 - Closing HTML code tag.
 				'ugc'            => sprintf( esc_html__( '%1$sAdd %2$srel="UGC"%3$s to link', 'all-in-one-seo-pack' ), '&nbsp;', '<code>', '</code>' ),
+				// Translators: Minimum input length in characters to start searching posts in the "Insert/edit link" modal.
+				'minInputLength' => (int) _x( '3', 'minimum input length for searching post links', 'all-in-one-seo-pack' ),
 			]
 		);
 	}
@@ -852,49 +870,22 @@ class Admin {
 	 * @return void
 	 */
 	public function enqueueAssets() {
-		// Scripts.
-		aioseo()->helpers->enqueueScript(
-			'aioseo-vendors',
-			'js/chunk-vendors.js'
-		);
-		aioseo()->helpers->enqueueScript(
-			'aioseo-common',
-			'js/chunk-common.js'
-		);
+		aioseo()->helpers->enqueueChunkedAssets();
 		aioseo()->helpers->enqueueScript(
 			'aioseo-' . $this->currentPage . '-script',
 			'js/' . $this->currentPage . '.js'
 			// [ 'aioseo-common', 'aioseo-venders', 'aioseo-app' ]
 		);
 
-		// Styles.
-		$rtl = is_rtl() ? '.rtl' : '';
-		aioseo()->helpers->enqueueStyle(
-			'aioseo-vendors',
-			"css/chunk-vendors$rtl.css"
-		);
-		aioseo()->helpers->enqueueStyle(
-			'aioseo-common',
-			"css/chunk-common$rtl.css"
-		);
-		// aioseo()->helpers->enqueueStyle(
-		//  'aioseo-' . $this->currentPage . '-style',
-		//  'css/' . $this->currentPage . $rtl . '.css'
-		// );
-		// aioseo()->helpers->enqueueStyle(
-		//  'aioseo-' . $this->currentPage . '-vendors-style',
-		//  'css/chunk-' . $this->currentPage . $rtl . '-vendors.css'
-		// );
-
-		if ( ! apply_filters( 'aioseo_flyout_menu_disable', false ) ) {
-			$this->enqueueFlyoutMenu();
-		}
-
 		wp_localize_script(
 			'aioseo-' . $this->currentPage . '-script',
 			'aioseo',
 			aioseo()->helpers->getVueData( $this->currentPage )
 		);
+
+		if ( ! apply_filters( 'aioseo_flyout_menu_disable', false ) ) {
+			$this->enqueueFlyoutMenu();
+		}
 	}
 
 	/**
@@ -1013,18 +1004,10 @@ class Admin {
 	 * @return void
 	 */
 	public function enqueuePostsScripts() {
-		// Scripts.
+		aioseo()->helpers->enqueueChunkedAssets();
 		aioseo()->helpers->enqueueScript(
 			'aioseo-posts-table',
 			'js/posts-table.js'
-		);
-		aioseo()->helpers->enqueueScript(
-			'aioseo-vendors',
-			'js/chunk-vendors.js'
-		);
-		aioseo()->helpers->enqueueScript(
-			'aioseo-common',
-			'js/chunk-common.js'
 		);
 
 		$data          = aioseo()->helpers->getVueData();
@@ -1036,16 +1019,7 @@ class Admin {
 			$data
 		);
 
-		// Styles.
 		$rtl = is_rtl() ? '.rtl' : '';
-		aioseo()->helpers->enqueueStyle(
-			'aioseo-vendors',
-			"css/chunk-vendors$rtl.css"
-		);
-		aioseo()->helpers->enqueueStyle(
-			'aioseo-common',
-			"css/chunk-common$rtl.css"
-		);
 		aioseo()->helpers->enqueueStyle(
 			'aioseo-posts-table-style',
 			"css/posts-table$rtl.css"
@@ -1425,7 +1399,11 @@ class Admin {
 		$ids     = array_map( 'intval', explode( ',', wp_unslash( $_GET['ids'] ) ) ); // phpcs:ignore HM.Security.ValidatedSanitizedInput.InputNotSanitized
 		foreach ( $ids as $id ) {
 			// We need to clone the post here so we can get a real permalink for the post even if it is not published already.
-			$post              = aioseo()->helpers->getPost( $id );
+			$post = aioseo()->helpers->getPost( $id );
+			if ( ! is_a( $post, 'WP_Post' ) ) {
+				continue;
+			}
+
 			$post->post_status = 'publish';
 			$post->post_name   = sanitize_title(
 				$post->post_name ? $post->post_name : $post->post_title,

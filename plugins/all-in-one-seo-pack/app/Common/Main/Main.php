@@ -35,6 +35,8 @@ class Main {
 	 * @return void
 	 */
 	public function enqueueAssets() {
+		aioseo()->helpers->enqueueChunkedAssets();
+
 		// Scripts.
 		$standalone = [
 			'app',
@@ -47,15 +49,6 @@ class Main {
 				'js/' . $key . '.js'
 			);
 		}
-
-		aioseo()->helpers->enqueueScript(
-			'aioseo-vendors',
-			'js/chunk-vendors.js'
-		);
-		aioseo()->helpers->enqueueScript(
-			'aioseo-common',
-			'js/chunk-common.js'
-		);
 
 		wp_localize_script(
 			'aioseo-app',
@@ -73,17 +66,7 @@ class Main {
 			]
 		);
 
-		// Styles.
 		$rtl = is_rtl() ? '.rtl' : '';
-		aioseo()->helpers->enqueueStyle(
-			'aioseo-common',
-			"css/chunk-common$rtl.css"
-		);
-		aioseo()->helpers->enqueueStyle(
-			'aioseo-vendors',
-			"css/chunk-vendors$rtl.css"
-		);
-
 		foreach ( $standalone as $key ) {
 			aioseo()->helpers->enqueueStyle(
 				"aioseo-$key-style",

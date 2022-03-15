@@ -152,6 +152,39 @@ class PostsTerms {
 	}
 
 	/**
+	 * Get the first attached image for a post.
+	 *
+	 * @since 4.1.8
+	 *
+	 * @param  \WP_REST_Request  $request The REST Request
+	 * @return \WP_REST_Response          The response.
+	 */
+	public static function getFirstAttachedImage( $request ) {
+		$args = $request->get_params();
+
+		if ( empty( $args['postId'] ) ) {
+			return new \WP_REST_Response( [
+				'success' => false,
+				'message' => __( 'No post ID was provided.', 'all-in-one-seo-pack' )
+			], 400 );
+		}
+
+		// Disable the cache.
+		aioseo()->social->image->useCache = false;
+
+		$post = aioseo()->helpers->getPost( $args['postId'] );
+		$url  = aioseo()->social->image->getImage( 'facebook', 'attach', $post );
+
+		// Reset the cache property.
+		aioseo()->social->image->useCache = true;
+
+		return new \WP_REST_Response( [
+			'success' => true,
+			'url'     => is_array( $url ) ? $url[0] : $url,
+		], 200 );
+	}
+
+	/**
 	 * Returns the posts custom fields.
 	 *
 	 * @since 4.0.6

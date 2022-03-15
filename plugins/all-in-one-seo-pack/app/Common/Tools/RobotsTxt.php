@@ -53,13 +53,13 @@ class RobotsTxt {
 			$networkAndOriginal = $this->mergeRules( $originalRules, $this->parseRules( $networkRules ) );
 			$networkAndOriginal = $this->robotsArrayUnique( $networkAndOriginal );
 
-			return $this->stringify( $networkAndOriginal, $original );
+			return $this->stringify( $networkAndOriginal );
 		}
 
 		$allRules = $this->mergeRules( $originalRules, $this->mergeRules( $this->parseRules( $networkRules ), $this->parseRules( aioseo()->options->tools->robots->rules ) ), true );
 		$allRules = $this->robotsArrayUnique( $allRules );
 
-		return $this->stringify( $allRules, $original );
+		return $this->stringify( $allRules );
 	}
 
 	/**
@@ -173,10 +173,9 @@ class RobotsTxt {
 	 * Stringifies the parsed rules.
 	 *
 	 * @param  array  $allRules The rules array.
-	 * @param  string $original The original robots.txt content.
 	 * @return string           The stringified rules.
 	 */
-	private function stringify( $allRules, $original ) {
+	private function stringify( $allRules ) {
 		$robots = [];
 		foreach ( $allRules as $agent => $rules ) {
 			if ( empty( $agent ) ) {
@@ -200,13 +199,28 @@ class RobotsTxt {
 
 		$robots = implode( "\r\n", $robots ) . "\r\n";
 
-		$sitemapUrls = array_merge( aioseo()->sitemap->helpers->getSitemapUrls(), $this->extractSitemapUrls( $original ) );
+		$sitemapUrls = $this->getSitemapRules();
 		if ( ! empty( $sitemapUrls ) ) {
 			$sitemapUrls = implode( "\r\n", $sitemapUrls );
 			$robots     .= $sitemapUrls . "\r\n\r\n";
 		}
 
 		return $robots;
+	}
+
+	/**
+	 * Get Sitemap URLs excluding the default ones.
+	 *
+	 * @since 4.1.7
+	 *
+	 * @return array An array of the Sitemap URLs.
+	 */
+	private function getSitemapRules() {
+		$defaultRobots   = $this->getDefaultRobots();
+		$defaultSitemaps = $this->extractSitemapUrls( $defaultRobots );
+		$sitemapRules    = aioseo()->sitemap->helpers->getSitemapUrls();
+
+		return array_diff( $sitemapRules, $defaultSitemaps );
 	}
 
 	/**
@@ -471,13 +485,13 @@ class RobotsTxt {
 	}
 
 	/**
-	 * Get the default Robots.txt rules (excluding our own).
+	 * Get the default Robots.txt lines (excluding our own).
 	 *
-	 * @since 4.0.0
+	 * @since 4.1.7
 	 *
 	 * @return array An array of robots.txt rules (excluding our own).
 	 */
-	public function getDefaultRules() {
+	public function getDefaultRobots() {
 		// First, we need to remove our filter, so that it doesn't run unintentionally.
 		remove_filter( 'robots_txt', [ $this, 'buildRules' ], 10000 );
 
@@ -492,7 +506,20 @@ class RobotsTxt {
 		// Add the filter back.
 		add_filter( 'robots_txt', [ $this, 'buildRules' ], 10000, 2 );
 
-		return $this->extractRules( explode( "\n", $rules ) );
+		return explode( "\n", $rules );
+	}
+
+	/**
+	 * Get the default Robots.txt rules (excluding our own).
+	 *
+	 * @since 4.0.0
+	 *
+	 * @return array An array of robots.txt rules (excluding our own).
+	 */
+	public function getDefaultRules() {
+		$originalRobots = $this->getDefaultRobots();
+
+		return $this->extractRules( $originalRobots );
 	}
 
 	/**

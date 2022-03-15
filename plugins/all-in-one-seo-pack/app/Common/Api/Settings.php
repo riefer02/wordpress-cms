@@ -134,8 +134,7 @@ class Settings {
 
 		return new \WP_REST_Response( [
 			'success'       => true,
-			'notifications' => Models\Notification::getNotifications(),
-			'redirection'   => aioseo()->options->getRedirection()
+			'notifications' => Models\Notification::getNotifications()
 		], 200 );
 	}
 

@@ -104,7 +104,7 @@ trait ThirdParty {
 			return false;
 		}
 
-		if ( ! is_admin() && ! aioseo()->helpers->isAjaxCronRest() && function_exists( 'is_shop' ) ) {
+		if ( ! is_admin() && ! aioseo()->helpers->isAjaxCronRestRequest() && function_exists( 'is_shop' ) ) {
 			return is_shop();
 		}
 
@@ -126,7 +126,7 @@ trait ThirdParty {
 			return false;
 		}
 
-		if ( ! is_admin() && ! aioseo()->helpers->isAjaxCronRest() && function_exists( 'is_cart' ) ) {
+		if ( ! is_admin() && ! aioseo()->helpers->isAjaxCronRestRequest() && function_exists( 'is_cart' ) ) {
 			return is_cart();
 		}
 
@@ -148,7 +148,7 @@ trait ThirdParty {
 			return false;
 		}
 
-		if ( ! is_admin() && ! aioseo()->helpers->isAjaxCronRest() && function_exists( 'is_checkout' ) ) {
+		if ( ! is_admin() && ! aioseo()->helpers->isAjaxCronRestRequest() && function_exists( 'is_checkout' ) ) {
 			return is_checkout();
 		}
 
@@ -170,7 +170,7 @@ trait ThirdParty {
 			return false;
 		}
 
-		if ( ! is_admin() && ! aioseo()->helpers->isAjaxCronRest() && function_exists( 'is_account_page' ) ) {
+		if ( ! is_admin() && ! aioseo()->helpers->isAjaxCronRestRequest() && function_exists( 'is_account_page' ) ) {
 			return is_account_page();
 		}
 

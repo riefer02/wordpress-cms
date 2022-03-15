@@ -20,20 +20,21 @@ trait Vue {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  string $page The current page.
-	 * @return array        The data.
+	 * @param  string $page         The current page.
+	 * @param  int    $staticPostId Data for a specific post.
+	 * @param  string $integration  Data for a integration ( builder ).
+	 * @return array                The data.
 	 */
-	public function getVueData( $page = null ) {
-		$postTypeObj = get_post_type_object( get_post_type( get_the_ID() ) );
-		$screen      = get_current_screen();
+	public function getVueData( $page = null, $staticPostId = null, $integration = null ) {
+		$screen = aioseo()->helpers->getCurrentScreen();
 
 		$isStaticHomePage = 'page' === get_option( 'show_on_front' );
 		$staticHomePage   = intval( get_option( 'page_on_front' ) );
 		$data = [
 			'page'             => $page,
 			'screen'           => [
-				'base'        => $screen->base,
-				'postType'    => $screen->post_type,
+				'base'        => isset( $screen->base ) ? $screen->base : '',
+				'postType'    => isset( $screen->post_type ) ? $screen->post_type : '',
 				'blockEditor' => isset( $screen->is_block_editor ) ? $screen->is_block_editor : false,
 				'new'         => isset( $screen->action ) && 'add' === $screen->action
 			],
@@ -102,7 +103,7 @@ trait Vue {
 				'multisite'           => is_multisite(),
 				'network'             => is_network_admin(),
 				'mainSite'            => is_main_site(),
-				'subdomain'           => defined( 'SUBDOMAIN_INSTALL' ) && SUBDOMAIN_INSTALL,
+				'subdomain'           => apply_filters( 'aioseo_multisite_subdomain', defined( 'SUBDOMAIN_INSTALL' ) && SUBDOMAIN_INSTALL ),
 				'isWooCommerceActive' => $this->isWooCommerceActive(),
 				'isBBPressActive'     => class_exists( 'bbPress' ),
 				'staticHomePage'      => $isStaticHomePage ? $staticHomePage : false,
@@ -134,7 +135,8 @@ trait Vue {
 			'helpPanel'        => json_decode( aioseo()->help->getDocs() ),
 			'scheduledActions' => [
 				'sitemaps' => []
-			]
+			],
+			'integration'      => $integration
 		];
 
 		if ( is_multisite() && ! is_network_admin() ) {
@@ -146,7 +148,8 @@ trait Vue {
 		}
 
 		if ( 'post' === $page ) {
-			$postId              = get_the_ID();
+			$postId              = $staticPostId ? $staticPostId : get_the_ID();
+			$postTypeObj         = get_post_type_object( get_post_type( $postId ) );
 			$post                = Models\Post::getPost( $postId );
 
 			$data['currentPost'] = [
@@ -155,13 +158,14 @@ trait Vue {
 				'id'                             => $postId,
 				'priority'                       => ! empty( $post->priority ) ? $post->priority : 'default',
 				'frequency'                      => ! empty( $post->frequency ) ? $post->frequency : 'default',
-				'permalink'                      => get_the_permalink(),
+				'permalink'                      => get_permalink( $postId ),
+				'permalinkPath'                  => aioseo()->helpers->leadingSlashIt( aioseo()->helpers->getPermalinkPath( get_permalink( $postId ) ) ),
 				'title'                          => ! empty( $post->title ) ? $post->title : aioseo()->meta->title->getPostTypeTitle( $postTypeObj->name ),
 				'description'                    => ! empty( $post->description ) ? $post->description : aioseo()->meta->description->getPostTypeDescription( $postTypeObj->name ),
 				'keywords'                       => ! empty( $post->keywords ) ? $post->keywords : wp_json_encode( [] ),
 				'keyphrases'                     => ! empty( $post->keyphrases )
 					? json_decode( $post->keyphrases )
-					: json_decode( '{"focus":{},"additional":[]}' ),
+					: Models\Post::getKeyphrasesDefaults(),
 				'page_analysis'                  => ! empty( $post->page_analysis )
 					? json_decode( $post->page_analysis )
 					: Models\Post::getPageAnalysisDefaults(),
@@ -171,6 +175,7 @@ trait Vue {
 				],
 				'type'                           => $postTypeObj->labels->singular_name,
 				'postType'                       => 'type' === $postTypeObj->name ? '_aioseo_type' : $postTypeObj->name,
+				'postStatus'                     => get_post_status( $postId ),
 				'isSpecialPage'                  => $this->isSpecialPage( $postId ),
 				'isWooCommercePageWithoutSchema' => $this->isWooCommercePageWithoutSchema( $postId ),
 				'seo_score'                      => (int) $post->seo_score,
@@ -184,8 +189,8 @@ trait Vue {
 				'noimageindex'                   => ( (int) $post->robots_noimageindex ) === 0 ? false : true,
 				'noodp'                          => ( (int) $post->robots_noodp ) === 0 ? false : true,
 				'notranslate'                    => ( (int) $post->robots_notranslate ) === 0 ? false : true,
-				'maxSnippet'                     => null === $post->robots_max_snippet ? -1 : (int) $post->robots_max_snippet,
-				'maxVideoPreview'                => null === $post->robots_max_videopreview ? -1 : (int) $post->robots_max_videopreview,
+				'maxSnippet'                     => null === $post->robots_max_snippet ? - 1 : (int) $post->robots_max_snippet,
+				'maxVideoPreview'                => null === $post->robots_max_videopreview ? - 1 : (int) $post->robots_max_videopreview,
 				'maxImagePreview'                => $post->robots_max_imagepreview,
 				'modalOpen'                      => false,
 				'tabs'                           => ( ! empty( $post->tabs ) )
@@ -219,8 +224,18 @@ trait Vue {
 				],
 				'linkAssistant'                  => [
 					'modalOpen' => false
+				],
+				'limit_modified_date'            => ( (int) $post->limit_modified_date ) === 0 ? false : true,
+				'redirects'                      => [
+					'modalOpen' => false
 				]
 			];
+
+			$data['user']['siteAuthors'] = $this->getSiteAuthors();
+
+			if ( empty( $integration ) ) {
+				$data['integration'] = aioseo()->helpers->getPostPageBuilderName( $postId );
+			}
 
 			if ( ! $post->exists() ) {
 				$oldPostMeta = aioseo()->migration->meta->getMigratedPostMeta( $postId );
@@ -291,15 +306,6 @@ trait Vue {
 
 		if ( 'settings' === $page ) {
 			$data['breadcrumbs']['defaultTemplate'] = aioseo()->helpers->encodeOutputHtml( aioseo()->breadcrumbs->frontend->getDefaultTemplate() );
-		}
-
-		$loadedAddons = aioseo()->addons->getLoadedAddons();
-		if ( ! empty( $loadedAddons ) ) {
-			foreach ( $loadedAddons as $addon ) {
-				if ( isset( $addon->helpers ) && method_exists( $addon->helpers, 'getVueData' ) ) {
-					$data = $addon->helpers->getVueData( $data, $page, isset( $post ) ? $post : null );
-				}
-			}
 		}
 
 		return $data;

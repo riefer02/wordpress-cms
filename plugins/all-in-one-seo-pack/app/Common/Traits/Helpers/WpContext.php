@@ -156,10 +156,6 @@ trait WpContext {
 	 * @return WP_Post|null         The post object.
 	 */
 	public function getPost( $postId = false ) {
-		static $showOnFront  = null;
-		static $pageOnFront  = null;
-		static $pageForPosts = null;
-
 		$postId = is_a( $postId, 'WP_Post' ) ? $postId->ID : $postId;
 
 		if ( aioseo()->helpers->isWooCommerceShopPage( $postId ) ) {
@@ -167,23 +163,21 @@ trait WpContext {
 		}
 
 		if ( is_front_page() || is_home() ) {
-			$showOnFront = $showOnFront ? $showOnFront : 'page' === get_option( 'show_on_front' );
+			$showOnFront = 'page' === get_option( 'show_on_front' );
 			if ( $showOnFront ) {
 				if ( is_front_page() ) {
-					$pageOnFront = $pageOnFront ? $pageOnFront : (int) get_option( 'page_on_front' );
+					$pageOnFront = (int) get_option( 'page_on_front' );
 
 					return get_post( $pageOnFront );
 				} elseif ( is_home() ) {
-					$pageForPosts = $pageForPosts ? $pageForPosts : (int) get_option( 'page_for_posts' );
+					$pageForPosts = (int) get_option( 'page_for_posts' );
 
 					return get_post( $pageForPosts );
 				}
 			}
-
-			return get_post();
 		}
 
-		// We need to check for this and not always return a post because we'll otherwise return a post on term pages.
+		// We need to check these conditions and cannot always return get_post() because we'll return the first post on archive pages (dynamic homepage, term pages, etc.).
 		if (
 			$this->isScreenBase( 'post' ) ||
 			$postId ||
@@ -267,7 +261,7 @@ trait WpContext {
 			$postContent = $this->theContent( $postContent );
 		}
 
-		$postContent          = wp_trim_words( $postContent, 55, apply_filters( 'excerpt_more', ' ' . '[&hellip;]' ) );
+		$postContent          = wp_trim_words( $postContent, 55, '' );
 		$postContent          = str_replace( ']]>', ']]&gt;', $postContent );
 		$postContent          = preg_replace( '#(<figure.*\/figure>|<img.*\/>)#', '', $postContent );
 		$content[ $post->ID ] = trim( wp_strip_all_tags( strip_shortcodes( $postContent ) ) );
@@ -363,7 +357,7 @@ trait WpContext {
 	 * @since 4.0.5
 	 *
 	 * @param  WP_Post $post                The Post object to check.
-	 * @param  bool    $allowedPostStatuses Whether or not to allow drafts.
+	 * @param  array   $allowedPostStatuses Allowed post statuses.
 	 * @return bool                         True if valid, false if not.
 	 */
 	public function isValidPost( $post, $allowedPostStatuses = [ 'publish' ] ) {
@@ -469,6 +463,10 @@ trait WpContext {
 	 * @return bool True if this is a REST API request.
 	 */
 	public function isRestApiRequest() {
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+			return true;
+		}
+
 		global $wp_rewrite;
 
 		if ( empty( $wp_rewrite ) ) {
@@ -494,7 +492,7 @@ trait WpContext {
 	 *
 	 * @return bool Wether the request is an AJAX, CRON or REST request.
 	 */
-	public function isAjaxCronRest() {
+	public function isAjaxCronRestRequest() {
 		return wp_doing_ajax() || wp_doing_cron() || $this->isRestApiRequest();
 	}
 

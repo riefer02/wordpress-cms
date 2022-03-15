@@ -35,7 +35,6 @@ class Head {
 
 		$this->analytics    = new GoogleAnalytics();
 		$this->links        = new Meta\Links();
-		$this->robots       = new Meta\Robots();
 		$this->keywords     = new Meta\Keywords();
 		$this->verification = new Meta\SiteVerification();
 		$this->views        = [

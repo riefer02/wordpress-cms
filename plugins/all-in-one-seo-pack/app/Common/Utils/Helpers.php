@@ -261,4 +261,39 @@ class Helpers {
 
 		return $string;
 	}
+
+	/**
+	 * Enqueue the chunk styles and scripts.
+	 *
+	 * @since 4.1.7
+	 *
+	 * @param  string $handle The script/style handle.
+	 * @return void
+	 */
+	public function enqueueChunkedAssets( $handle = '' ) {
+		if ( ! empty( $handle ) ) {
+			$handle = $handle . '-';
+		}
+
+		// Scripts.
+		aioseo()->helpers->enqueueScript(
+			'aioseo-' . $handle . 'vendors',
+			'js/chunk-vendors.js'
+		);
+		aioseo()->helpers->enqueueScript(
+			'aioseo-' . $handle . 'common',
+			'js/chunk-common.js'
+		);
+
+		// Styles.
+		$rtl = is_rtl() ? '.rtl' : '';
+		aioseo()->helpers->enqueueStyle(
+			'aioseo-' . $handle . 'common',
+			"css/chunk-common$rtl.css"
+		);
+		aioseo()->helpers->enqueueStyle(
+			'aioseo-' . $handle . 'vendors',
+			"css/chunk-vendors$rtl.css"
+		);
+	}
 }

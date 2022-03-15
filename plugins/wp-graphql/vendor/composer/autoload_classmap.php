@@ -6,6 +6,10 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Appsero\\Client' => $vendorDir . '/appsero/client/src/Client.php',
+    'Appsero\\Insights' => $vendorDir . '/appsero/client/src/Insights.php',
+    'Appsero\\License' => $vendorDir . '/appsero/client/src/License.php',
+    'Appsero\\Updater' => $vendorDir . '/appsero/client/src/Updater.php',
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'GraphQLRelay\\Connection\\ArrayConnection' => $vendorDir . '/ivome/graphql-relay-php/src/Connection/ArrayConnection.php',
     'GraphQLRelay\\Connection\\Connection' => $vendorDir . '/ivome/graphql-relay-php/src/Connection/Connection.php',

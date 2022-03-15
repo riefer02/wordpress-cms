@@ -50,7 +50,7 @@ class Autoterms_List extends WP_List_Table
     {
         $class = ['st-autoterm-tr'];
         $id    = 'st-autoterm-' . md5($item['ID']);
-        echo sprintf('<tr id="%s" class="%s">', $id, implode(' ', $class));
+        echo sprintf('<tr id="%s" class="%s">', esc_attr($id), esc_attr(implode(' ', $class)));
         $this->single_row_columns($item);
         echo '</tr>';
     }
@@ -65,7 +65,8 @@ class Autoterms_List extends WP_List_Table
         $columns = [
             'title'     => __('Title', 'simple-tags'),
             'taxonomy'  => __('Taxonomy', 'simple-tags'),
-            'post_types'  => __('Auto term Post type', 'simple-tags')
+            'post_types'  => __('Auto term Post type', 'simple-tags'),
+            'source'  => __('Source', 'simple-tags')
         ];
 
         return $columns;
@@ -117,7 +118,7 @@ class Autoterms_List extends WP_List_Table
         }
         ?>
         <p class="search-box">
-            <label class="screen-reader-text" for="<?php echo esc_attr($input_id); ?>"><?php echo $text; ?>:</label>
+            <label class="screen-reader-text" for="<?php echo esc_attr($input_id); ?>"><?php echo esc_html($text); ?>:</label>
             <input type="search" id="<?php echo esc_attr($input_id); ?>" name="s"
                    value="<?php _admin_search_query(); ?>"/>
             <?php submit_button($text, '', '', false, ['id' => 'search-submit']); ?>
@@ -352,10 +353,36 @@ class Autoterms_List extends WP_List_Table
             }
             $result = join(', ', $result_array);
         } else {
-            $result = esc_attr__('None', 'simple-tags');
+            $result = esc_html__('None', 'simple-tags');
         }
 
         return $result;
+    }
+
+    /**
+     * The action column
+     *
+     * @param $item
+     *
+     * @return string
+     */
+    protected function column_source($item)
+    {
+        $used_source = []; 
+        
+        if(isset($item['autoterm_use_taxonomy']) && !empty(taxopress_disp_boolean($item['autoterm_use_taxonomy']))) {
+            $used_source[] = esc_html__('Existing taxonomy terms', 'simple-tags');
+        }
+        
+        if(isset($item['autoterm_use_dandelion']) && !empty(taxopress_disp_boolean($item['autoterm_use_dandelion']))) {
+            $used_source[] = esc_html__('Dandelion', 'simple-tags');
+        }
+        
+        if(isset($item['autoterm_use_opencalais']) && !empty(taxopress_disp_boolean($item['autoterm_use_opencalais']))) {
+            $used_source[] = esc_html__('Open Calais', 'simple-tags');
+        }
+
+        return join(', ', $used_source);
     }
 
 

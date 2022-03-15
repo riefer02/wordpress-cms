@@ -4,7 +4,7 @@ Donate link: http://www.wpbeginner.com/wpbeginner-needs-your-help/
 Tags: WordPress analytics, google analytics, google analytics dashboard, google analytics widget, WooCommerce stats, analytics dashboard, universal google analytics, statistics, tracking, stats, google, google analytics by yoast, ga, monster insights, monsterinsights, universal analytics, web stats, ecommerce, ecommerce tracking
 Requires at least: 4.8.0
 Tested up to: 5.9
-Stable tag: 8.3.2
+Stable tag: 8.4.0
 Requires PHP: 5.5
 License: GPL v3
 
@@ -292,6 +292,19 @@ You can also learn about other <a href="http://www.wpbeginner.com/category/plugi
 4. Want more features? <a href="https://www.monsterinsights.com/?utm_source=wprepo&utm_medium=link&utm_campaign=liteversion">Purchase MonsterInsights Pro</a>!
 
 == Changelog ==
+= 8.4.0: February 28, 2022 =
+- Fixed: We fixed the plugin requirements for Forms Addons version 2.2.1+
+- Fixed: We optimized the popular posts widgets display in edit screens
+- Fixed: We fixed console errors for users who have CookieYes enabled
+- Fixed: We fixed custom dimensions for all single post types.
+
+= 8.3.4: February 10, 2022 =
+- Fixed: Resolved a PHP Notice message some users received after upgrading to 8.3.3
+
+= 8.3.3: February 09, 2022 =
+- Fixed: We fixed the PDF reports format.
+- Tweak: We optimized the Ajax requests for notifications.
+
 = 8.3.2: January 25, 2022 =
 - Fixed: We fixed the fatal error that occurred due to a generic class name conflict.
 - Fixed: Fixed errors some users were having with our Exclude from Tracking feature.
@@ -300,7 +313,7 @@ You can also learn about other <a href="http://www.wpbeginner.com/category/plugi
 - New: With our new Exclude from Tracking Feature admins can now exclude any page or post from tracking.
 - Fixed: We fixed the local gtag.js where it didn’t work with only the GAv4 connection.
 - Fixed: We fixed the messages in the plugin settings based on the Media Addon activation status.
-- Tweek: We categorized and enhanced the plugin notifications.
+- Tweak: We categorized and enhanced the plugin notifications.
 - Fixed: We fixed Javascript errors when the CookieBot plugin is active and the Forms addon is not.
 - Fixed: We fixed UTM parameters in tracking links.
 - Fixed: We remove the type attribute from the script tag if the current theme supports html5.

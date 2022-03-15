@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit338dd3fe7b4538e1a50c79857913d76f
+class ComposerStaticInit36b6f5e40469c15233b7a3c064e28c34
 {
     public static $files = array (
         'a3ed03db03d57650e139da3e8903943c' => __DIR__ . '/../..' . '/access-functions.php',
@@ -21,6 +21,10 @@ class ComposerStaticInit338dd3fe7b4538e1a50c79857913d76f
         array (
             'GraphQL\\' => 8,
         ),
+        'A' => 
+        array (
+            'Appsero\\' => 8,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
@@ -32,9 +36,17 @@ class ComposerStaticInit338dd3fe7b4538e1a50c79857913d76f
         array (
             0 => __DIR__ . '/..' . '/webonyx/graphql-php/src',
         ),
+        'Appsero\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/appsero/client/src',
+        ),
     );
 
     public static $classMap = array (
+        'Appsero\\Client' => __DIR__ . '/..' . '/appsero/client/src/Client.php',
+        'Appsero\\Insights' => __DIR__ . '/..' . '/appsero/client/src/Insights.php',
+        'Appsero\\License' => __DIR__ . '/..' . '/appsero/client/src/License.php',
+        'Appsero\\Updater' => __DIR__ . '/..' . '/appsero/client/src/Updater.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'GraphQLRelay\\Connection\\ArrayConnection' => __DIR__ . '/..' . '/ivome/graphql-relay-php/src/Connection/ArrayConnection.php',
         'GraphQLRelay\\Connection\\Connection' => __DIR__ . '/..' . '/ivome/graphql-relay-php/src/Connection/Connection.php',
@@ -429,9 +441,9 @@ class ComposerStaticInit338dd3fe7b4538e1a50c79857913d76f
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit338dd3fe7b4538e1a50c79857913d76f::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit338dd3fe7b4538e1a50c79857913d76f::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit338dd3fe7b4538e1a50c79857913d76f::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit36b6f5e40469c15233b7a3c064e28c34::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit36b6f5e40469c15233b7a3c064e28c34::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit36b6f5e40469c15233b7a3c064e28c34::$classMap;
 
         }, null, ClassLoader::class);
     }

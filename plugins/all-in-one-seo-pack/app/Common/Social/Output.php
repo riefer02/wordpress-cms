@@ -53,7 +53,7 @@ class Output {
 			'og:type'        => aioseo()->social->facebook->getObjectType(),
 			'og:title'       => aioseo()->helpers->encodeOutputHtml( aioseo()->social->facebook->getTitle() ),
 			'og:description' => aioseo()->helpers->encodeOutputHtml( aioseo()->social->facebook->getDescription() ),
-			'og:url'         => set_url_scheme( esc_url( aioseo()->helpers->canonicalUrl() ) ),
+			'og:url'         => esc_url( aioseo()->helpers->canonicalUrl() ),
 			'fb:app_id'      => aioseo()->options->social->facebook->advanced->appId,
 			'fb:admins'      => implode( ',', array_map( 'trim', explode( ',', aioseo()->options->social->facebook->advanced->adminId ) ) ),
 		];

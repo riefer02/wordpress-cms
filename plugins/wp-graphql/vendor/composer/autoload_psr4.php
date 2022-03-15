@@ -8,4 +8,5 @@ $baseDir = dirname($vendorDir);
 return array(
     'WPGraphQL\\' => array($baseDir . '/src'),
     'GraphQL\\' => array($vendorDir . '/webonyx/graphql-php/src'),
+    'Appsero\\' => array($vendorDir . '/appsero/client/src'),
 );

@@ -1,6 +1,7 @@
 jQuery(document).ready(function () {
   jQuery('#suggestedtags .hndle').html(html_entity_decode(stHelperSuggestedTagsL10n.title_bloc));
   jQuery('#suggestedtags .inside .container_clicktags').html(stHelperSuggestedTagsL10n.content_bloc);
+  jQuery('#suggestedtags .handle-actions').prepend(html_entity_decode(stHelperSuggestedTagsL10n.edit_metabox_link));
 
   // Generi call for autocomplete API
   jQuery('a.suggest-action-link').click(function (event) {
@@ -21,11 +22,19 @@ jQuery(document).ready(function () {
     e.stopPropagation();
     jQuery('#suggestedtags').removeClass('close');
   });
+
+  jQuery('button.term_suggestion_refresh').click(function (e) {
+    e.stopPropagation();
+    e.preventDefault();
+    jQuery('#suggestedtags').removeClass('close');
+    jQuery('select.term_suggestion_select').trigger('change');
+  });
   
   jQuery('select.term_suggestion_select').change(function () {
     jQuery('#suggestedtags').removeClass('close');
     var suggestterms = Number(jQuery('select.term_suggestion_select').attr('data-suggestterms'));
     var data_action = jQuery('select.term_suggestion_select :selected').val();
+    var current_post_id = jQuery('#post_ID').val();
     
     if (data_action == '') {
       jQuery('#suggestedtags .inside .container_clicktags').html(stHelperSuggestedTagsL10n.content_bloc);
@@ -36,12 +45,22 @@ jQuery(document).ready(function () {
 
     jQuery('#suggestedtags .container_clicktags').load(ajaxurl + '?action=simpletags&stags_action=' + data_action + '&suggestterms=' + suggestterms + '', {
       content: getContentFromEditor(),
+      post_id: current_post_id,
       title: getTitleFromEditor()
     }, function () {
       registerClickTags();
     });
     return false;
   });
+
+
+  //set local tags as default
+  if (jQuery('.term_suggestion_select').length > 0) {
+    setTimeout(taxopress_set_default_suggested_term, 2000);
+  }
+  function taxopress_set_default_suggested_term(){
+      jQuery('.term_suggestion_select').val('tags_from_local_db').trigger('change');
+  }
 
 });
 
@@ -99,7 +118,14 @@ function registerClickTags() {
   jQuery('#suggestedtags .container_clicktags span').click(function (event) {
     event.preventDefault();
 
-    addTag(this.innerHTML);
+    var taxonomy = jQuery(this).attr('data-taxonomy');
+    var term_id = jQuery(this).attr('data-term_id');
+    if (term_id > 0) {
+      addTag(this.innerHTML, taxonomy, term_id);
+    } else {
+      addTag(this.innerHTML);
+    }
+
     jQuery(this).addClass('used_term');
   });
 

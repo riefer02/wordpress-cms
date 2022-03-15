@@ -190,8 +190,17 @@ class Cache {
 
 			return;
 		}
+
+		// If we find the activation redirect, we'll need to reset it after clearing.
+		$activationRedirect = $this->get( 'activation_redirect' );
+
 		aioseo()->db->truncate( $this->table )->run();
+
 		$this->clearStatic();
+
+		if ( $activationRedirect ) {
+			$this->update( 'activation_redirect', $activationRedirect, 30 );
+		}
 	}
 
 	/**

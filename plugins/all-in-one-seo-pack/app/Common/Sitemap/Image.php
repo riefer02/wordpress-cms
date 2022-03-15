@@ -44,11 +44,14 @@ class Image {
 			return;
 		}
 
-		// Don't schedule a scan if an importer is running.
-		if ( aioseo()->importExport->isImportRunning() ) {
+		// Don't schedule a scan if an importer or the V3 migration is running.
+		// We'll do our scans there.
+		if (
+			aioseo()->importExport->isImportRunning() ||
+			aioseo()->migration->isMigrationRunning()
+		) {
 			return;
 		}
-
 		// Action Scheduler hooks.
 		add_filter( 'init', [ $this, 'scheduleScan' ], 3001 );
 	}
@@ -142,12 +145,9 @@ class Image {
 			return;
 		}
 
-		$postContent = $this->doShortcodes( $post->post_content );
-		// Trim both internal and external whitespace.
-		$postContent = preg_replace( '/\s\s+/u', ' ', trim( $postContent ) );
+		$images = $this->extract( $post );
 
-		$images = $this->extract( $postContent );
-
+		// Get the featured image.
 		if ( has_post_thumbnail( $post ) ) {
 			$images[] = get_the_post_thumbnail_url( $post );
 		}
@@ -260,25 +260,76 @@ class Image {
 	}
 
 	/**
-	 * Extracts all image URls from the post content.
+	 * Extracts all image URls from the post.
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  string $content The post content.
-	 * @return array           The image URLs.
+	 * @param  Object $post The post object.
+	 * @return array        The image URLs.
 	 */
-	private function extract( $content ) {
-		preg_match_all( '#<img[^>]+src="([^">]+)"#', $content, $matches );
-		if ( ! $matches[1] ) {
-			return [];
+	private function extract( $post ) {
+		$urls        = [];
+		$postContent = $post->post_content;
+
+		// Get the galleries here instead of through doShortcodes to prevent buggy behaviour.
+		// WordPress is supposed to only return the attached images but returns more if the shortcode has no valid attributes, so we need to grab them ourselves.
+		$galleries = get_post_galleries( $post, false );
+		foreach ( $galleries as $gallery ) {
+			foreach ( $gallery['src'] as $imageUrl ) {
+				$urls[] = $imageUrl;
+			}
 		}
 
-		$urls = [];
+		// Now, get rid of them so that we don't process the shortcodes again.
+		$regex       = get_shortcode_regex( [ 'gallery' ] );
+		$postContent = preg_replace( "/$regex/i", '', $postContent );
+
+		// Get images from Divi if it's active.
+		$urls = array_merge( $urls, $this->extractDiviImages( $postContent ) );
+
+		// Now, get the remaining images from image tags in the post content.
+		$postContent = $this->doShortcodes( $postContent, $post->ID );
+		$postContent = preg_replace( '/\s\s+/u', ' ', trim( $postContent ) ); // Trim both internal and external whitespace.
+
+		preg_match_all( '#<img[^>]+src="([^">]+)"#', $postContent, $matches );
 		foreach ( $matches[1] as $url ) {
 			$urls[] = aioseo()->helpers->makeUrlAbsolute( $url );
 		}
 
 		return array_unique( $urls );
+	}
+
+	/**
+	 * Extracts images from Divi shortcodes and returns them.
+	 *
+	 * @since 4.1.8
+	 *
+	 * @param  string $content The post content.
+	 * @return array           The URLs.
+	 */
+	private function extractDiviImages( $content ) {
+		if ( ! defined( 'ET_BUILDER_VERSION' ) ) {
+			return [];
+		}
+
+		$urls  = [];
+		$regex = get_shortcode_regex( [ 'et_pb_image', 'et_pb_gallery' ] );
+		preg_match_all( "/$regex/i", $content, $matches, PREG_SET_ORDER );
+		foreach ( $matches as $shortcode ) {
+			$attributes = shortcode_parse_atts( $shortcode[3] );
+			if ( ! empty( $attributes['src'] ) ) {
+				$urls[] = $attributes['src'];
+			}
+
+			if ( ! empty( $attributes['gallery_ids'] ) ) {
+				$attachmentIds = explode( ',', $attributes['gallery_ids'] );
+				foreach ( $attachmentIds as $attachmentId ) {
+					$urls[] = wp_get_attachment_url( $attachmentId );
+				}
+			}
+		}
+
+		return $urls;
 	}
 
 	/**
@@ -304,9 +355,10 @@ class Image {
 	 * @since 4.0.0
 	 *
 	 * @param  string $content The post content.
+	 * @param  int    $postId  The post ID.
 	 * @return string          The parsed post content.
 	 */
-	private function doShortcodes( $content ) {
+	private function doShortcodes( $content, $postId = null ) {
 		$shortcodes = apply_filters( 'aioseo_image_sitemap_allowed_shortcodes', [
 			'WordPress Core' => 'gallery',
 			'NextGen #1'     => 'ngg',
@@ -314,7 +366,7 @@ class Image {
 		] );
 		$wildcards  = apply_filters( 'aioseo_image_sitemap_allowed_wildcards', [ 'image', 'img', 'gallery' ] );
 
-		return aioseo()->helpers->doAllowedShortcodes( $content, $shortcodes, $wildcards );
+		return aioseo()->helpers->doAllowedShortcodes( $content, $shortcodes, $wildcards, $postId );
 	}
 
 	/**

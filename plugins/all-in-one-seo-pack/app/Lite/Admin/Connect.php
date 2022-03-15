@@ -123,38 +123,11 @@ class Connect {
 		remove_all_actions( 'admin_notices' );
 		remove_all_actions( 'all_admin_notices' );
 
-		// Scripts.
-		aioseo()->helpers->enqueueScript(
-			'aioseo-vendors',
-			'js/chunk-vendors.js'
-		);
-		aioseo()->helpers->enqueueScript(
-			'aioseo-common',
-			'js/chunk-common.js'
-		);
+		aioseo()->helpers->enqueueChunkedAssets();
 		aioseo()->helpers->enqueueScript(
 			'aioseo-connect-script',
 			'js/connect.js'
 		);
-
-		// Styles.
-		$rtl = is_rtl() ? '.rtl' : '';
-		aioseo()->helpers->enqueueStyle(
-			'aioseo-vendors',
-			"css/chunk-vendors$rtl.css"
-		);
-		aioseo()->helpers->enqueueStyle(
-			'aioseo-common',
-			"css/chunk-common$rtl.css"
-		);
-		// aioseo()->helpers->enqueueStyle(
-		//  'aioseo-connect-style',
-		//  "css/connect$rtl.css"
-		// );
-		// aioseo()->helpers->enqueueStyle(
-		//  'aioseo-connect-vendors-style',
-		//  "css/chunk-connect-vendors$rtl.css"
-		// );
 
 		wp_localize_script(
 			'aioseo-connect-script',
@@ -175,38 +148,11 @@ class Connect {
 		remove_all_actions( 'admin_notices' );
 		remove_all_actions( 'all_admin_notices' );
 
-		// Scripts.
-		aioseo()->helpers->enqueueScript(
-			'aioseo-vendors',
-			'js/chunk-vendors.js'
-		);
-		aioseo()->helpers->enqueueScript(
-			'aioseo-common',
-			'js/chunk-common.js'
-		);
+		aioseo()->helpers->enqueueChunkedAssets();
 		aioseo()->helpers->enqueueScript(
 			'aioseo-connect-pro-script',
 			'js/connect-pro.js'
 		);
-
-		// Styles.
-		$rtl = is_rtl() ? '.rtl' : '';
-		aioseo()->helpers->enqueueStyle(
-			'aioseo-vendors',
-			"css/chunk-vendors$rtl.css"
-		);
-		aioseo()->helpers->enqueueStyle(
-			'aioseo-common',
-			"css/chunk-common$rtl.css"
-		);
-		// aioseo()->helpers->enqueueStyle(
-		//  'aioseo-connect-pro-style',
-		//  "css/connect-pro$rtl.css"
-		// );
-		// aioseo()->helpers->enqueueStyle(
-		//  'aioseo-connect-pro-vendors-style',
-		//  "css/chunk-connect-pro-vendors$rtl.css"
-		// );
 
 		wp_localize_script(
 			'aioseo-connect-pro-script',

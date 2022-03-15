@@ -2,8 +2,8 @@
 Contributors: publishpress, kevinB, stevejburge, andergmartins, olatechpro, ojopaul
 Tags: category, tag, taxonomy, related posts, tag cloud, terms, tagging, navigation, tag manager, tags manager, term manager, terms manager
 Requires at least: 3.3
-Tested up to: 5.8
-Stable tag: 3.4.4
+Tested up to: 5.9
+Stable tag: 3.5.1
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -225,7 +225,50 @@ If you have a busy WooCommerce site, it can be difficult to organize all your pr
 
 == Changelog ==
 
-v3.4.4- 2021-01-05
+v3.5.1- 2022-03-09
+* Fixed: Mass Edit Terms not working #1304
+* Fixed: Add the ability to disable logs #1281
+* Fixed: Add the ability to purge the logs #1282
+* Fixed: Layout changes for Logs #1297
+* Fixed: Translation updates #1289
+* Fixed: New filters for Logs #1291
+* Fixed: Add a light color for used tags #1287
+* Fixed: Small updates for "Edit Terms for Current Post" #1292
+* Fixed: "Disable Auto Terms" box not working for scheduling #1284
+
+v3.5.0- 2022-02-28
+* Added: Add a Log for Auto Terms #1243
+* Fixed: Safeguards auto terms for large sites #1249
+* Fixed: Bug with on Suggested Terms #1250
+* Fixed: Change "TaxoPress - Settings" to just "TaxoPress" in metabox #1246
+* Fixed: Apply Auto terms batches and wait time to scheduled auto terms cron #1241
+* Fixed: Ways to process large numbers of posts in Auto Terms #1200
+* Fixed: Check compatability of all 3 widgets with WordPress 5.9 #1119
+* Fixed: Disable Free version when people install Pro #1234
+* Fixed: Tabbed Design for Terms for Current Post screen #1167
+* Fixed: Tabbed design for Related Posts screen #1166
+
+v3.4.5- 2022-02-07
+* Fixed: Can't delete terms in "Manage Terms" #1194
+* Fixed: Correct spelling - Terms for Current Post #1134
+* Fixed: Enable “Show content from all post types on archive page” by default #1138
+* Fixed: Change name "Local tags" to "Existing terms on your site" #1139
+* Fixed: Add "Edit this metabox" link #1140
+* Fixed: Check "Existing taxonomy terms" by default #1155
+* Fixed: Auto Links change “&rarr;” to &amp;rarr; #1158
+* Fixed: Update "Terms Display" admin screen to use vertical tabs #1116
+* Fixed: AShow the Display tags inside the plugin #1121
+* Fixed: Small changes to "Terms Display" #1171
+* Fixed: Stop making "Post Types" required in Taxonomy #1181
+* Fixed: Disabling "Suggest existing terms on your site" causes trouble with other metabox #1174
+* Fixed: Disable "Post" option in Auto Terms by default #1178
+* Fixed: Suggest terms "show existing terms" changes #1176
+* Fixed: Hide dropdown if there is only only option for post suggest terms #1228
+* Fixed: Add a refresh button to Automatic term suggestions #1215
+* Fixed: Show "Edit this metabox" only to users with "admin simple tags" #1214
+* Fixed: Automatic terms suggestions not working with categories #1207
+
+v3.4.4- 2022-01-05
 * Fixed: Add capability check for saving all screen form data
 * Fixed: Santize all form entries
 * Fixed: Add and validate all form nonce

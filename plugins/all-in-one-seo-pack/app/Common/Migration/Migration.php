@@ -212,4 +212,15 @@ class Migration {
 			aioseo()->options->tools->robots->enable = true;
 		}
 	}
+
+	/**
+	 * Checks whether the V3 migration is running.
+	 *
+	 * @since 4.1.8
+	 *
+	 * @return bool Whether the V3 migration is running.
+	 */
+	public function isMigrationRunning() {
+		return aioseo()->cache->get( 'v3_migration_in_progress_settings' ) || aioseo()->cache->get( 'v3_migration_in_progress_posts' );
+	}
 }

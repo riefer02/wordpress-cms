@@ -17,10 +17,11 @@ class Facebook {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @return string The image URL.
+	 * @param  int    $postId The post ID (optional).
+	 * @return string         The image URL.
 	 */
-	public function getImage() {
-		$post = aioseo()->helpers->getPost();
+	public function getImage( $postId = null ) {
+		$post = aioseo()->helpers->getPost( $postId );
 		if ( is_home() && 'posts' === get_option( 'show_on_front' ) ) {
 			$image = aioseo()->options->social->facebook->homePage->image;
 			if ( empty( $image ) ) {

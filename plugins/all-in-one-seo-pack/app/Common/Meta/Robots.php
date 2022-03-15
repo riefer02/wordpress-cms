@@ -96,7 +96,9 @@ class Robots {
 	 */
 	public function meta() {
 		if ( is_category() || is_tag() || is_tax() ) {
-			return $this->term();
+			$this->term();
+
+			return $this->metaHelper();
 		}
 
 		if ( is_home() && 'posts' === get_option( 'show_on_front' ) ) {
@@ -148,9 +150,10 @@ class Robots {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @return string The robots meta tag value.
+	 * @param  bool         $array Whether or not to return the value as an array.
+	 * @return array|string        The robots meta tag value.
 	 */
-	protected function metaHelper() {
+	public function metaHelper( $array = false ) {
 		$pageNumber = aioseo()->helpers->getPageNumber();
 		if ( 1 < $pageNumber || 0 < (int) get_query_var( 'cpage', 0 ) ) {
 			if (
@@ -179,9 +182,9 @@ class Robots {
 			$this->attributes['nofollow'] = 'nofollow';
 		}
 
-		$this->attributes = apply_filters( 'aioseo_robots_meta', $this->attributes );
+		$this->attributes = array_filter( apply_filters( 'aioseo_robots_meta', $this->attributes ) );
 
-		return implode( ', ', array_filter( $this->attributes ) );
+		return $array ? $this->attributes : implode( ', ', $this->attributes );
 	}
 
 	/**
@@ -189,11 +192,12 @@ class Robots {
 	 *
 	 * @since 4.0.0
 	 *
+	 * @param  \WP_Post|null $post The post object.
 	 * @return void
 	 */
-	private function post() {
+	public function post( $post = null ) {
 		$dynamicOptions = aioseo()->dynamicOptions->noConflict();
-		$post           = aioseo()->helpers->getPost();
+		$post           = aioseo()->helpers->getPost( $post );
 		$metaData       = aioseo()->meta->metaData->getMetaData( $post );
 
 		if ( ! empty( $metaData ) && ! $metaData->robots_default ) {
@@ -212,21 +216,20 @@ class Robots {
 	 *
 	 * @since 4.0.6
 	 *
-	 * @return string The robots meta tag value.
+	 * @param  \WP_Term|null $term The term object if any.
+	 * @return void
 	 */
-	private function term() {
+	public function term( $term = null ) {
 		$dynamicOptions = aioseo()->dynamicOptions->noConflict();
-		$term           = get_queried_object();
+		$term           = is_a( $term, 'WP_Term' ) ? $term : get_queried_object();
 
 		if ( $dynamicOptions->searchAppearance->taxonomies->has( $term->taxonomy ) ) {
 			$this->globalValues( [ 'taxonomies', $term->taxonomy ], true );
 
-			return$this->metaHelper();
+			return;
 		}
 
 		$this->globalValues();
-
-		return $this->metaHelper();
 	}
 
 	/**

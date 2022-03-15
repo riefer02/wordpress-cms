@@ -153,6 +153,7 @@ a#close_clicktags{display:none;}
 
 .auto-terms-content input[type=text] {
     min-height: 40px;
+    max-width: 90%;
 }
 
 .click-tag-search-box {
@@ -175,9 +176,9 @@ a#close_clicktags{display:none;}
 .terms-type-options {
     margin-bottom: 15px !important;
 }
-.tagcloudui input[type=text],
-.tagcloudui input[type=number],
-.tagcloudui select {
+.tagcloudui:not(.st-manage-terms-page):not(.st_mass_terms-page) input[type=text],
+.tagcloudui:not(.st-manage-terms-page):not(.st_mass_terms-page) input[type=number],
+.tagcloudui:not(.st-manage-terms-page):not(.st_mass_terms-page) select {
     width: 300px;
 }
 .taxopress-warning {
@@ -236,12 +237,24 @@ a#close_clicktags{display:none;}
     width: calc(100% - 350px);
     display: inline-block;
 }
+
+.admin-settings {
+    width: calc(100% - 400px);
+    display: inline-block;
+}
+
 .taxopress-right-sidebar {
     float: right;
     margin-left: 20px;
     margin-top: 10px;
     width: 325px;
 }
+
+.admin-settings-sidebar {
+    margin-right: 30px;
+    margin-top: 20px;
+}
+
 .taxopress-right-sidebar-wrapper {
     background: #fff;
     margin-bottom: 10px;
@@ -467,7 +480,7 @@ ul.taxopress-tab li.autoterm_terms_tab a::before {
     content: "\f323";
 }
 ul.taxopress-tab li.autoterm_options_tab a::before {
-    content: "\f111";
+    content: "\f180";
 }
 ul.taxopress-tab li.autoterm_oldcontent_tab a::before {
     content: "\f186";
@@ -480,6 +493,42 @@ ul.taxopress-tab li.suggestterm_external_tab a::before {
 }
 ul.taxopress-tab li.autoterm_schedule_tab a::before {
     content: "\f469";
+}
+ul.taxopress-tab li.autoterm_logs_tab a::before {
+    content: "\f321";
+}
+
+
+ul.taxopress-tab li.tagcloud_terms_tab a::before {
+    content: "\f323";
+}
+ul.taxopress-tab li.tagcloud_design_tab a::before {
+    content: "\f309";
+}
+ul.taxopress-tab li.tagcloud_advanced_tab a::before {
+    content: "\f111";
+}
+
+
+ul.taxopress-tab li.relatedpost_advanced_tab a::before {
+    content: "\f111";
+}
+ul.taxopress-tab li.relatedpost_option_tab a::before {
+    content: "\f180";
+}
+ul.taxopress-tab li.relatedpost_display_tab a::before {
+    content: "\f186";
+}
+
+
+ul.taxopress-tab li.posttags_advanced_tab a::before {
+    content: "\f111";
+}
+ul.taxopress-tab li.posttags_options_tab a::before {
+    content: "\f180";
+}
+ul.taxopress-tab li.posttags_display_tab a::before {
+    content: "\f186";
 }
 
 .st-html-exclusion-table th {
@@ -537,6 +586,13 @@ ul.taxopress-tab li.autoterm_schedule_tab a::before {
     display: block;
 }
 
+#side-sortables .edit-suggest-term-metabox {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-right: 10px;
+}
+
 .clicktags-search-wrapper .option {
     display: inline;
     margin-right: 15px;
@@ -545,6 +601,15 @@ ul.taxopress-tab li.autoterm_schedule_tab a::before {
 .clicktags-search-wrapper .option select,
 .clicktags-search-wrapper .option input {
     width: 100%;
+}
+
+#side-sortables .term_suggestion_select {
+    width: 100%;
+}
+
+.edit-suggest-term-metabox {
+    font-size: 14px;
+    padding: 8px;
 }
 
 body.block-editor-page .clicktags-search-wrapper .option select,
@@ -581,6 +646,52 @@ body.block-editor-page .clicktags-search-wrapper .option input {
 .taxopress-advertisement-right-sidebar .upgrade-btn a:hover {
     background: #fcca46;
     color: #000 !important;
+}
+
+.taxopress-advertisement-right-sidebar h3.hndle {
+    font-size: 14px;
+    padding: 8px 12px;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.taxopress-token-right-sidebar h3.hndle {
+    font-size: 14px;
+    padding: 8px 12px;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.taxopress-logs-tablenav-purge-logs {
+    color: red !important;
+}
+
+.autoterms-log-table-filter select {
+    float: none !important;
+}
+
+.autoterms-log-table-filter {
+    margin-bottom: 5px;
+}
+
+.autoterms-log-table-filter label,
+.autoterms-log-table-limit-settings label,
+.taxopress-props-label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.taxopress-props-label {
+    visibility: hidden;
+}
+
+.autoterms-log-table-limit-settings {
+    margin-bottom: 5px;
+    display: block;
+}
+
+.tablenav .actions.autoterms-log-table-filter select {
+    max-width: 140px;
 }
 
 @media only screen and (min-width: 1075px) {
@@ -639,6 +750,89 @@ body.block-editor-page .clicktags-search-wrapper .option input {
         margin-left: 0;
     }
 }
+
+.taxopress-log-table table {
+    border: 1px solid #ccc;
+    border-collapse: collapse;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    table-layout: fixed;
+  }
+  
+.taxopress-log-table table caption {
+    font-size: 1.5em;
+    margin: .5em 0 .75em;
+  }
+  
+.taxopress-log-table table tr {
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    padding: .35em;
+  }
+  
+.taxopress-log-table table th,
+.taxopress-log-table table td {
+    padding: .625em;
+    text-align: center;
+    padding: 8px 10px !important;
+  }
+  
+.taxopress-log-table table th {
+    font-size: .85em;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+  /* Responsive table
+  @media screen and (max-width: 600px) {
+*/
+  .taxopress-log-table table {
+      border: 0;
+    }
+  
+  .taxopress-log-table table caption {
+      font-size: 1.3em;
+    }
+    
+  .taxopress-log-table table thead {
+      border: none;
+      clip: rect(0 0 0 0);
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      padding: 0;
+      position: absolute;
+      width: 1px;
+    }
+    
+  .taxopress-log-table table tr {
+      border-bottom: 3px solid #ddd;
+      display: block;
+      margin-bottom: .625em;
+    }
+    
+  .taxopress-log-table table td {
+      border-bottom: 1px solid #ddd;
+      display: block;
+      font-size: .8em;
+      text-align: right;
+    }
+    
+  .taxopress-log-table table td::before {
+      /*
+      * aria-label has no advantage, it won't be read inside a table
+      content: attr(aria-label);
+      */
+      content: attr(data-label);
+      float: left;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    
+  .taxopress-log-table table td:last-child {
+      border-bottom: 0;
+    }
+  /* end responsive table } */
 
 @media screen and (max-width: 1367px) {
     
