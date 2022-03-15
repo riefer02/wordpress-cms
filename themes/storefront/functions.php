@@ -67,4 +67,12 @@ if (version_compare(get_bloginfo('version'), '4.7.3', '>=') && (is_admin() || is
  * Note: Do not add any custom code here. Please use a custom plugin so that your customizations aren't lost during updates.
  * https://github.com/woocommerce/theme-customisations.
  */
+
+/**
+ * Rief Productions Custom Functionality.
+ *
+ * Headless CMS Setup 2021-12-18
+ */
+require_once 'lib/theme-setup.php';
 require_once 'lib/vendor-acf.php';
+require_once 'lib/vendor-wordpress.php';
